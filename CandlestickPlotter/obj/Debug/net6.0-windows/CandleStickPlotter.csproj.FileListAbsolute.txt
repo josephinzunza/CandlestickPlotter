@@ -1,0 +1,17 @@
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\bin\Debug\net6.0-windows\CandleStickPlotter.exe
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\bin\Debug\net6.0-windows\CandleStickPlotter.deps.json
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\bin\Debug\net6.0-windows\CandleStickPlotter.runtimeconfig.json
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\bin\Debug\net6.0-windows\CandleStickPlotter.dll
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\bin\Debug\net6.0-windows\CandleStickPlotter.pdb
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.Form1.resources
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.csproj.GenerateResource.cache
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.AssemblyInfoInputs.cache
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.AssemblyInfo.cs
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.csproj.CoreCompileInputs.cache
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.dll
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\refint\CandleStickPlotter.dll
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.pdb
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.genruntimeconfig.cache
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\ref\CandleStickPlotter.dll
+C:\Users\joseh\source\repos\CandleStickPlotter\CandleStickPlotter\obj\Debug\net6.0-windows\CandleStickPlotter.StudiesForm.resources
