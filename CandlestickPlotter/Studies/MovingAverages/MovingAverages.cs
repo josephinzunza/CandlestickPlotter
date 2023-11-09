@@ -17,25 +17,23 @@ namespace CandleStickPlotter.Studies.MovingAverages
 
         public int Length { get; set; }
         public double SmoothingFactor { get; set; }
-        public ColumnDouble Calculate(ColumnDouble column)
+        public Column<double> Calculate(Column<double> column)
         {
             return Calculate(column, Length);
         }
 
-        public static ColumnDouble Calculate(ColumnDouble column, int length)
+        public static Column<double> Calculate(Column<double> column, int length)
         {
             double smoothingFactor = 2.0 / (length + 1);
             return Calculate(column, length, smoothingFactor);
         }
-        public static ColumnDouble Calculate(ColumnDouble column, int length, double smoothingFactor)
+        public static Column<double> Calculate(Column<double> column, int length, double smoothingFactor)
         {
-            ColumnDouble result = new($"EMA{length}", column.Length);
-            
-            int i = 0, leadingNaNs = column.CountLeadingNaNs();
+            Column<double> result = new($"EMA{length}", column.Length);
+
+            int i = 0, leadingNaNs = Column.CountLeadingNaNs(column);
             for (; i < leadingNaNs; i++)
-            {
                 result[i] = double.NaN;
-            }
             result[i] = column[i];
             i++;
             for (; i < column.Length; i++)
@@ -51,16 +49,16 @@ namespace CandleStickPlotter.Studies.MovingAverages
         }
         public int Length { get; set; }
 
-        public ColumnDouble Calculate(ColumnDouble column)
+        public Column<double> Calculate(Column<double> column)
         {
             return Calculate(column, Length);
         }
 
-        public static ColumnDouble Calculate(ColumnDouble column, int length)
+        public static Column<double> Calculate(Column<double> column, int length)
         {
-            ColumnDouble result = new($"SMA{length}", column.Length);
+            Column<double> result = new($"SMA{length}", column.Length);
             double sum = 0;
-            int i = 0, stop = column.CountLeadingNaNs();
+            int i = 0, stop = Column.CountLeadingNaNs(column);
             for (; i < stop; i++)
                 result[i] = double.NaN;
             stop += length - 1;
@@ -85,17 +83,17 @@ namespace CandleStickPlotter.Studies.MovingAverages
             Length = length;
         }
         public int Length { get; set; }
-        public ColumnDouble Calculate(ColumnDouble column)
+        public Column<double> Calculate(Column<double> column)
         {
             return Calculate(column, Length);
         }
-        public static ColumnDouble Calculate(ColumnDouble column, int length)
+        public static Column<double> Calculate(Column<double> column, int length)
         {
-            ColumnDouble result = new ($"WMA{length}", column.Length);
+            Column<double> result = new ($"WMA{length}", column.Length);
             double divisor = length * (length + 1) / 2.0;
             double rollingSum = 0;
             double weightedSum = 0;
-            int i = 0, stop = column.CountLeadingNaNs();
+            int i = 0, stop = Column.CountLeadingNaNs(column);
             for (; i < stop; i++)
                 result[i] = double.NaN;
             stop += length;
@@ -124,15 +122,15 @@ namespace CandleStickPlotter.Studies.MovingAverages
             Length = length;
         }
         public int Length { get; set; }
-        public ColumnDouble Calculate(ColumnDouble column)
+        public Column<double> Calculate(Column<double> column)
         {
             return Calculate(column, Length);
         }
-        public static ColumnDouble Calculate(ColumnDouble column, int length)
+        public static Column<double> Calculate(Column<double> column, int length)
         {
             double smoothingFactor = 1.0 / length;
-            ColumnDouble result = new($"WildersMA{length}", column.Length);
-            int i = 0, stop = column.CountLeadingNaNs();
+            Column<double> result = new($"WildersMA{length}", column.Length);
+            int i = 0, stop = Column.CountLeadingNaNs(column);
             double sum = 0;
             for (; i < stop; i++)
                 result[i] = double.NaN;

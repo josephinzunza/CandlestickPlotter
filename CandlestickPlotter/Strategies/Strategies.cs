@@ -4,17 +4,16 @@ using CandleStickPlotter.Studies.Momentum;
 using CandleStickPlotter.Studies.MovingAverages;
 using CandleStickPlotter.Studies.Volatility;
 using CandleStickPlotter.Utils;
-using System;
 
 namespace CandleStickPlotter.Strategies
 {
-    public enum AvailableStudies
+    public enum StudyType
     {
         AverageTrueRange,
-        BollingerBand,
+        BollingerBands,
         DonchianChannel,
         ExponentialMovingAverage,
-        KeltnerChannel,
+        KeltnerChannels,
         LinearRegression,
         RelativeStrengthIndex,
         SimpleMovingAverage,
@@ -24,10 +23,10 @@ namespace CandleStickPlotter.Strategies
         WeigthedMovingAverage,
         WildersMovingAverage
     }
-    public enum BandsAvailableValues : byte { Lower, Middle, Upper }
-    public enum LinearRegressionAvailableValues : byte { Intercept, Predicted, R2, Slope }
+    public enum BandTypes : byte { Lower, Middle, Upper }
+    public enum LinearRegressionValueTypes : byte { Intercept, Predicted, R2, Slope }
     public enum PositionType : byte { Long, Short }
-    public enum TTMSqueezeAvailableValues : byte { Histogram, Signal}
+    public enum TTMSqueezeValueTypes : byte { Histogram, Signal}
     readonly struct OpeningCondition
     {
         public readonly string PostfixExpression { get; }
@@ -72,15 +71,15 @@ namespace CandleStickPlotter.Strategies
         private OpeningCondition OpeningCondition { get; }
         private ClosingCondition ClosingCondition { get; }
         public StrategyResult Result { get; private set; }
-        public Strategy(OpeningCondition openingCondition, ClosingCondition closingCondition, OhlcData ohlcData, int id = 0)
+        public Strategy(OpeningCondition openingCondition, ClosingCondition closingCondition, Table<double> ohlcvData, int id = 0)
         {
             OpeningCondition = openingCondition;
             ClosingCondition = closingCondition;
-            Result = new StrategyResult(id, EvaluateExpression(OpeningCondition.PostfixExpression, ohlcData).GetTrueIndices(),
-            EvaluateExpression(ClosingCondition.PostfixExpression, ohlcData).GetTrueIndices(), Array.Empty<char>(), Array.Empty<double>());
-            Evaluate(ohlcData);
+            Result = new StrategyResult(id, EvaluateExpression(OpeningCondition.PostfixExpression, ohlcvData),
+            EvaluateExpression(ClosingCondition.PostfixExpression, ohlcvData), Array.Empty<char>(), Array.Empty<double>());
+            Evaluate(ohlcvData);
         }
-        private void Evaluate(OhlcData ohlcData)
+        private void Evaluate(Table<double> ohlcvData)
         {
             int openingConditionIndex;
             int closingConditionIndex;
@@ -106,11 +105,11 @@ namespace CandleStickPlotter.Strategies
                 {
                     openingConditionIndex++;
                     closingConditionIndex++;
-                    if (closingConditionIndex == ohlcData.Length) break;
-                    openingPrice = ohlcData.Open[openingConditionIndex];
+                    if (closingConditionIndex == ohlcvData.RowCount) break;
+                    openingPrice = ohlcvData["Open"][openingConditionIndex];
                     k = closingConditionIndex;
                     reason = 'C';
-                    closingPrice = ohlcData.Open[closingConditionIndex];
+                    closingPrice = ohlcvData["Open"][closingConditionIndex];
                     stopReached = false;
                     if (OpeningCondition.StopLoss != null || OpeningCondition.StopGain != null)
                     {
@@ -129,13 +128,13 @@ namespace CandleStickPlotter.Strategies
                         {
                             if (OpeningCondition.PositionType == PositionType.Long)
                             {
-                                if (ohlcData.Low[k] <= stopLossPrice)
+                                if (ohlcvData["Low"][k] <= stopLossPrice)
                                 {
                                     stopReached = true;
                                     reason = 'L';
                                     closingPrice = stopLossPrice;
                                 }
-                                else if (ohlcData.High[k] >= stopGainPrice)
+                                else if (ohlcvData["High"][k] >= stopGainPrice)
                                 {
                                     stopReached = true;
                                     reason = 'G';
@@ -144,13 +143,13 @@ namespace CandleStickPlotter.Strategies
                             }
                             else
                             {
-                                if (ohlcData.High[k] >= stopLossPrice)
+                                if (ohlcvData["High"][k] >= stopLossPrice)
                                 {
                                     stopReached = true;
                                     reason = 'L';
                                     closingPrice = stopLossPrice;
                                 }
-                                else if (ohlcData.Low[k] <= stopGainPrice)
+                                else if (ohlcvData["Low"][k] <= stopGainPrice)
                                 {
                                     stopReached = true;
                                     reason = 'G';
@@ -173,12 +172,12 @@ namespace CandleStickPlotter.Strategies
             Result.ClosingReasons = closingReason.ToArray();
             Result.GainLoss = gainLoss.ToArray();
         }
-        private static ColumnBool EvaluateExpression(string postfixExpression, OhlcData ohlcData)
+        private static int[] EvaluateExpression(string postfixExpression, Table<double> ohlcvData)
         {
             postfixExpression = postfixExpression.Trim();
             string[] tokens = postfixExpression.Split(' ');
-            Stack<ColumnDouble> doubleStack = new();
-            Stack<ColumnBool> booleanStack = new();
+            Stack<Column<double>> doubleStack = new();
+            Stack<int[]> booleanStack = new();
             Stack<double> constantStack = new();
             // D = double, B = boolean, C = constant
             Stack<char> nextOperandType = new();
@@ -191,12 +190,12 @@ namespace CandleStickPlotter.Strategies
                     if (isBoolean)
                     {
                         nextOperandType.Push('B');
-                        booleanStack.Push(GetBooleanStudy(studyName, specificStudyName, parameters, displaceAmount, ohlcData));
+                        booleanStack.Push(GetBooleanStudyTrueIndices(studyName, specificStudyName, parameters, displaceAmount, ohlcvData));
                     }
                     else
                     {
                         nextOperandType.Push('D');
-                        doubleStack.Push(GetStudy(studyName, specificStudyName, parameters, displaceAmount, ohlcData));
+                        doubleStack.Push(GetStudy(studyName, specificStudyName, parameters, displaceAmount, ohlcvData));
                     }
                 }
                 // It's a constant
@@ -214,51 +213,51 @@ namespace CandleStickPlotter.Strategies
                     {
                         if (nextOperand2 == 'D')
                         {
-                            ColumnDouble operand2 = doubleStack.Pop();
-                            ColumnDouble operand1 = doubleStack.Pop();
+                            Column<double> operand2 = doubleStack.Pop();
+                            Column<double> operand1 = doubleStack.Pop();
                             if (IsBooleanOperator(token[0]))
                             {
-                                booleanStack.Push(CalculateBooleanColumn(operand1, operand2, token[0]));
+                                booleanStack.Push(GetTrueIndices(operand1, operand2, token[0]));
                                 nextOperandType.Push('B');
                             }
                             else
                             {
-                                doubleStack.Push(CalculateColumnDouble(operand1, operand2, token[0]));
+                                doubleStack.Push(CalculateColumn(operand1, operand2, token[0]));
                                 nextOperandType.Push('D');
                             }
                         }
                         else if (nextOperand2 == 'C')
                         {
-                            ColumnDouble operand1 = doubleStack.Pop();
+                            Column<double> operand1 = doubleStack.Pop();
                             double operand2 = constantStack.Pop();
                             if (IsBooleanOperator(token[0]))
                             {
-                                booleanStack.Push(CalculateBooleanColumn(operand1, operand2, token[0]));
+                                booleanStack.Push(GetTrueIndices(operand1, operand2, token[0]));
                                 nextOperandType.Push('B');
                             }
                             else
                             {
-                                doubleStack.Push(CalculateColumnDouble(operand1, operand2, token[0]));
+                                doubleStack.Push(CalculateColumn(operand1, operand2, token[0]));
                                 nextOperandType.Push('D');
                             }
                         }
                         else if (nextOperand2 == 'B')
-                            throw new ArithmeticException("Error. Operations between ColumnDouble objects and ColumnBool objects are not valid.");
+                            throw new ArithmeticException("Error. Operations between Column<double> objects and Column<byte> objects are not valid.");
                     }
                     else if (nextOperand1 == 'C')
                     {
                         if (nextOperand2 == 'D')
                         {
-                            ColumnDouble operand2 = doubleStack.Pop();
+                            Column<double> operand2 = doubleStack.Pop();
                             double operand1 = constantStack.Pop();
                             if (IsBooleanOperator(token[0]))
                             {
-                                booleanStack.Push(CalculateBooleanColumn(operand1, operand2, token[0]));
+                                booleanStack.Push(GetTrueIndices(operand1, operand2, token[0]));
                                 nextOperandType.Push('B');
                             }
                             else
                             {
-                                doubleStack.Push(CalculateColumnDouble(operand1, operand2, token[0]));
+                                doubleStack.Push(CalculateColumn(operand1, operand2, token[0]));
                                 nextOperandType.Push('D');
                             }
                         }
@@ -270,19 +269,19 @@ namespace CandleStickPlotter.Strategies
                             nextOperandType.Push('C');
                         }
                         else if (nextOperand2 == 'B')
-                            throw new ArithmeticException("Error. Operations between constants and ColumnBool objects are not valid.");
+                            throw new ArithmeticException("Error. Operations between constants and Column<byte> objects are not valid.");
                     }
                     else if (nextOperand1 == 'B')
                     {
                         if (nextOperand2 == 'D')
-                            throw new ArithmeticException("Error. Operations between ColumnDouble objects and ColumnBool objects are not valid.");
+                            throw new ArithmeticException("Error. Operations between Column<double> objects and Column<byte> objects are not valid.");
                         else if(nextOperand2 == 'C')
-                            throw new ArithmeticException("Error. Operations between constants and ColumnBool objects are not valid.");
+                            throw new ArithmeticException("Error. Operations between constants and Column<byte> objects are not valid.");
                         else if (nextOperand2 == 'B')
                         {
-                            ColumnBool operand2 = booleanStack.Pop();
-                            ColumnBool operand1 = booleanStack.Pop();
-                            booleanStack.Push(CalculateBooleanColumn(operand1, operand2, token[0]));
+                            int[] operand2 = booleanStack.Pop();
+                            int[] operand1 = booleanStack.Pop();
+                            booleanStack.Push(GetTrueIndices(operand1, operand2, token[0], ohlcvData.RowCount));
                             nextOperandType.Push('B');
                         }
                     }
@@ -351,183 +350,185 @@ namespace CandleStickPlotter.Strategies
                 i++;
             }
             displaceAmount = Convert.ToInt32(displaceString);
-            AvailableStudies studyType = Enum.Parse<AvailableStudies>(studyName);
-            if (studyType == AvailableStudies.TTMSqueeze)
+            StudyType studyType = Enum.Parse<StudyType>(studyName);
+            if (studyType == StudyType.TTMSqueeze)
             {
-                TTMSqueezeAvailableValues specificStudyType = Enum.Parse<TTMSqueezeAvailableValues>(specificStudyName);
-                isBoolean = specificStudyType == TTMSqueezeAvailableValues.Signal;
+                TTMSqueezeValueTypes specificStudyType = Enum.Parse<TTMSqueezeValueTypes>(specificStudyName);
+                isBoolean = specificStudyType == TTMSqueezeValueTypes.Signal;
             }
         }
-        private static ColumnDouble GetStudy(string studyName, string specificStudyName, List<string> parameters, int displaceAmount, OhlcData data)
+        private static Column<double> GetStudy(string studyName, string specificStudyName, List<string> parameters, int displaceAmount, Table<double> ohlcvData)
         {
-            AvailableStudies study = Enum.Parse<AvailableStudies>(studyName);
+            StudyType study = Enum.Parse<StudyType>(studyName);
             switch (study)
             {
-                case AvailableStudies.AverageTrueRange:
-                    ColumnDouble atr = AverageTrueRange.Calculate(data, Convert.ToInt32(parameters[0]), Enum.Parse<MovingAverageType>(parameters[1]));
+                case StudyType.AverageTrueRange:
+                    Column<double> atr = AverageTrueRange.Calculate(ohlcvData, Convert.ToInt32(parameters[0]), Enum.Parse<MovingAverageType>(parameters[1]));
                     atr.Displace(displaceAmount);
                     return atr;
-                case AvailableStudies.BollingerBand:
+                case StudyType.BollingerBands:
                     { 
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        TableDouble bollingerBands = BollingerBands.Calculate(Utils.Utils.GetMarketData(data, marketDataType),
+                        Table<double> bollingerBands = BollingerBands.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType),
                             Convert.ToInt32(parameters[0]), Convert.ToDouble(parameters[2]), Enum.Parse<MovingAverageType>(parameters[3]));
-                        switch (Enum.Parse<BandsAvailableValues>(specificStudyName))
+                        switch (Enum.Parse<BandTypes>(specificStudyName))
                         {
-                            case BandsAvailableValues.Lower:
+                            case BandTypes.Lower:
                                 bollingerBands.Columns[0].Displace(displaceAmount);
                                 return bollingerBands.Columns[0];
-                            case BandsAvailableValues.Middle:
+                            case BandTypes.Middle:
                                 bollingerBands.Columns[1].Displace(displaceAmount);
                                 return bollingerBands.Columns[1];
-                            case BandsAvailableValues.Upper:
+                            case BandTypes.Upper:
                                 bollingerBands.Columns[2].Displace(displaceAmount);
                                 return bollingerBands.Columns[2];
                         }
                     }
                     break;
-                case AvailableStudies.DonchianChannel:
+                case StudyType.DonchianChannel:
                     {
-                        TableDouble donchianChannels = DonchianChannels.Calculate(data, Convert.ToInt32(parameters[0]));
-                        switch (Enum.Parse<BandsAvailableValues>(specificStudyName))
+                        Table<double> donchianChannels = DonchianChannels.Calculate(ohlcvData, Convert.ToInt32(parameters[0]));
+                        switch (Enum.Parse<BandTypes>(specificStudyName))
                         {
-                            case BandsAvailableValues.Lower:
+                            case BandTypes.Lower:
                                 donchianChannels.Columns[0].Displace(displaceAmount);
                                 return donchianChannels.Columns[0];
-                            case BandsAvailableValues.Middle:
+                            case BandTypes.Middle:
                                 donchianChannels.Columns[1].Displace(displaceAmount);
                                 return donchianChannels.Columns[1];
-                            case BandsAvailableValues.Upper:
+                            case BandTypes.Upper:
                                 donchianChannels.Columns[2].Displace(displaceAmount);
                                 return donchianChannels.Columns[2];
                         }
                     }
                     break;
-                case AvailableStudies.ExponentialMovingAverage:
+                case StudyType.ExponentialMovingAverage:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        ColumnDouble ema = ExponentialMovingAverage.Calculate(Utils.Utils.GetMarketData(data, marketDataType),
+                        Column<double> ema = ExponentialMovingAverage.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType),
                             Convert.ToInt32(parameters[0]));
                         ema.Displace(displaceAmount);
                         return ema;
                     }
-                case AvailableStudies.KeltnerChannel:
+                case StudyType.KeltnerChannels:
                     {
-                        TableDouble keltnerChannels = KeltnerChannels.Calculate(data, Convert.ToInt32(parameters[0]), Convert.ToDouble(parameters[2]),
+                        Table<double> keltnerChannels = KeltnerChannels.Calculate(ohlcvData, Convert.ToInt32(parameters[0]), Convert.ToDouble(parameters[2]),
                             Enum.Parse<MovingAverageType>(parameters[3]), Enum.Parse<MovingAverageType>(parameters[4]));
-                        switch (Enum.Parse<BandsAvailableValues>(specificStudyName))
+                        switch (Enum.Parse<BandTypes>(specificStudyName))
                         {
-                            case BandsAvailableValues.Lower:
+                            case BandTypes.Lower:
                                 keltnerChannels.Columns[0].Displace(displaceAmount);
                                 return keltnerChannels.Columns[0];
-                            case BandsAvailableValues.Middle:
+                            case BandTypes.Middle:
                                 keltnerChannels.Columns[1].Displace(displaceAmount);
                                 return keltnerChannels.Columns[1];
-                            case BandsAvailableValues.Upper:
+                            case BandTypes.Upper:
                                 keltnerChannels.Columns[2].Displace(displaceAmount);
                                 return keltnerChannels.Columns[2];
                         }
                     }
                     break;
-                case AvailableStudies.LinearRegression:
+                case StudyType.LinearRegression:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        TableDouble linearRegression = LeastSquaresLinearRegression.Calculate(Utils.Utils.GetMarketData(data, marketDataType), Convert.ToInt32(parameters[0]));
-                        switch (Enum.Parse<LinearRegressionAvailableValues>(specificStudyName))
+                        Table<double> linearRegression = LeastSquaresLinearRegression.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
+                        switch (Enum.Parse<LinearRegressionValueTypes>(specificStudyName))
                         {
-                            case LinearRegressionAvailableValues.Slope:
+                            case LinearRegressionValueTypes.Slope:
                                 linearRegression[0].Displace(displaceAmount);
                                 return linearRegression[0];
-                            case LinearRegressionAvailableValues.Intercept:
+                            case LinearRegressionValueTypes.Intercept:
                                 linearRegression[1].Displace(displaceAmount);
                                 return linearRegression[1];
-                            case LinearRegressionAvailableValues.R2:
+                            case LinearRegressionValueTypes.R2:
                                 linearRegression[2].Displace(displaceAmount);
                                 return linearRegression[2];
-                            case LinearRegressionAvailableValues.Predicted:
+                            case LinearRegressionValueTypes.Predicted:
                                 linearRegression[3].Displace(displaceAmount);
                                 return linearRegression[3];
                         }
                     }
                     break;
-                case AvailableStudies.RelativeStrengthIndex:
+                case StudyType.RelativeStrengthIndex:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        ColumnDouble rsi = RelativeStrenghtIndex.Calculate(Utils.Utils.GetMarketData(data, marketDataType),
+                        Column<double> rsi = RelativeStrenghtIndex.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType),
                             Convert.ToInt32(parameters[0]), Enum.Parse<MovingAverageType>(parameters[2]));
                         rsi.Displace(displaceAmount);
                         return rsi;
                     }
-                case AvailableStudies.SimpleMovingAverage:
+                case StudyType.SimpleMovingAverage:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        ColumnDouble sma = SimpleMovingAverage.Calculate(Utils.Utils.GetMarketData(data, marketDataType), Convert.ToInt32(parameters[0]));
+                        Column<double> sma = SimpleMovingAverage.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         sma.Displace(displaceAmount);
                         return sma;
                     }
-                case AvailableStudies.StandardDeviation:
+                case StudyType.StandardDeviation:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        ColumnDouble stDev = StandardDeviation.Calculate(Utils.Utils.GetMarketData(data, marketDataType), Convert.ToInt32(parameters[0]));
+                        Column<double> stDev = StandardDeviation.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         stDev.Displace(displaceAmount);
                         return stDev;
                     }
-                case AvailableStudies.TrueRange:
+                case StudyType.TrueRange:
                     {
-                        ColumnDouble tr = TrueRange.Calculate(data);
+                        Column<double> tr = TrueRange.Calculate(ohlcvData);
                         tr.Displace(displaceAmount);
                         return tr;
                     }
-                case AvailableStudies.TTMSqueeze:
+                case StudyType.TTMSqueeze:
                     {
-                        TableDouble ttmSqueeze = TTMSqueeze.Calculate(data, Convert.ToInt32(parameters[0]),
+                        Column<double> histogram;
+                        (histogram, _) = TTMSqueeze.Calculate(ohlcvData, Convert.ToInt32(parameters[0]),
                             Convert.ToDouble(parameters[3]), Convert.ToDouble(parameters[2]), Enum.Parse<MarketDataType>(parameters[1]));
-                        TTMSqueezeAvailableValues specificColumn = Enum.Parse<TTMSqueezeAvailableValues>(specificStudyName);
-                        if (specificColumn == TTMSqueezeAvailableValues.Histogram)
+                        TTMSqueezeValueTypes specificColumn = Enum.Parse<TTMSqueezeValueTypes>(specificStudyName);
+                        if (specificColumn == TTMSqueezeValueTypes.Histogram)
                         {
-                            ttmSqueeze[0].Displace(displaceAmount);
-                            return ttmSqueeze[0];
+                            histogram.Displace(displaceAmount);
+                            return histogram;
                         }
                         break;
                     }
-                case AvailableStudies.WeigthedMovingAverage:
+                case StudyType.WeigthedMovingAverage:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        ColumnDouble wma = WeightedMovingAverage.Calculate(Utils.Utils.GetMarketData(data, marketDataType), Convert.ToInt32(parameters[0]));
+                        Column<double> wma = WeightedMovingAverage.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         wma.Displace(displaceAmount);
                         return wma;
                     }
-                case AvailableStudies.WildersMovingAverage:
+                case StudyType.WildersMovingAverage:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        ColumnDouble wma = WeightedMovingAverage.Calculate(Utils.Utils.GetMarketData(data, marketDataType), Convert.ToInt32(parameters[0]));
+                        Column<double> wma = WeightedMovingAverage.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         wma.Displace(displaceAmount);
                         return wma;
                     }
             }
-            return new ColumnDouble("Null", 0);
+            return new Column<double>("Null", 0);
         }
-        private static ColumnBool GetBooleanStudy(string studyName, string specificStudyName, List<string> parameters, int displaceAmount, OhlcData data)
+        private static int[] GetBooleanStudyTrueIndices(string studyName, string specificStudyName, List<string> parameters, int displaceAmount, Table<double> ohlcvData)
         {
-            AvailableStudies study = Enum.Parse<AvailableStudies>(studyName);
+            StudyType study = Enum.Parse<StudyType>(studyName);
             switch (study)
             {
-                case AvailableStudies.TTMSqueeze:
+                case StudyType.TTMSqueeze:
                     {
-                        TableDouble ttmSqueeze = TTMSqueeze.Calculate(data, Convert.ToInt32(parameters[0]),
+                        Column<byte> signal;
+                        (_, signal) = TTMSqueeze.Calculate(ohlcvData, Convert.ToInt32(parameters[0]),
                             Convert.ToDouble(parameters[3]), Convert.ToDouble(parameters[2]), Enum.Parse<MarketDataType>(parameters[1]));
-                        TTMSqueezeAvailableValues specificColumn = Enum.Parse<TTMSqueezeAvailableValues>(specificStudyName);
-                        if (specificColumn == TTMSqueezeAvailableValues.Histogram)
+                        TTMSqueezeValueTypes specificColumn = Enum.Parse<TTMSqueezeValueTypes>(specificStudyName);
+                        if (specificColumn == TTMSqueezeValueTypes.Histogram)
                         {
-                            ttmSqueeze.BooleanColumns![0].Displace(displaceAmount);
-                            return ttmSqueeze.BooleanColumns[0];
+                            signal.Displace(displaceAmount);
+                            return signal == 1;
                         }
                     }
                     break;
             }
-            return new ColumnBool();
+            return Array.Empty<int>();
         }
-        private static ColumnDouble CalculateColumnDouble(ColumnDouble column1, ColumnDouble column2, char op)
+        private static Column<double> CalculateColumn(Column<double> column1, Column<double> column2, char op)
         {
             switch (op)
             {
@@ -542,9 +543,9 @@ namespace CandleStickPlotter.Strategies
                 default:
                     break;
             }
-            throw new ArithmeticException($"The operator '{op}' is not supported between two ColumnDouble objects.");
+            throw new ArithmeticException($"The operator '{op}' is not supported between two Column<double> objects.");
         }
-        private static ColumnDouble CalculateColumnDouble(ColumnDouble column, double value, char op)
+        private static Column<double> CalculateColumn(Column<double> column, double value, char op)
         {
             switch (op)
             {
@@ -559,9 +560,9 @@ namespace CandleStickPlotter.Strategies
                 default:
                     break;
             }
-            throw new ArithmeticException($"The operator '{op}' is not supported between a ColumnDouble object and a constant.");
+            throw new ArithmeticException($"The operator '{op}' is not supported between a Column<double> object and a constant.");
         }
-        private static ColumnDouble CalculateColumnDouble(double value, ColumnDouble column, char op)
+        private static Column<double> CalculateColumn(double value, Column<double> column, char op)
         {
             switch (op)
             {
@@ -576,9 +577,9 @@ namespace CandleStickPlotter.Strategies
                 default:
                     break;
             }
-            throw new ArithmeticException($"The operator '{op}' is not supported between a ColumnDouble object and a constant.");
+            throw new ArithmeticException($"The operator '{op}' is not supported between a Column<double> object and a constant.");
         }
-        private static ColumnBool CalculateBooleanColumn(ColumnDouble column1, ColumnDouble column2, char op)
+        private static int[] GetTrueIndices(Column<double> column1, Column<double> column2, char op)
         {
             switch (op)
             {
@@ -601,9 +602,9 @@ namespace CandleStickPlotter.Strategies
                 default:
                     break;
             }
-            throw new ArithmeticException($"The operator '{op}' is not supported between two ColumnDouble objects.");
+            throw new ArithmeticException($"The operator '{op}' is not supported between two Column<double> objects.");
         }
-        private static ColumnBool CalculateBooleanColumn(ColumnDouble column, double value, char op)
+        private static int[] GetTrueIndices(Column<double> column, double value, char op)
         {
             switch (op)
             {
@@ -626,9 +627,9 @@ namespace CandleStickPlotter.Strategies
                 default:
                     break;
             }
-            throw new ArithmeticException($"The operator '{op}' is not supported between a ColumnDouble object and a constant.");
+            throw new ArithmeticException($"The operator '{op}' is not supported between a Column<double> object and a constant.");
         }
-        private static ColumnBool CalculateBooleanColumn(double value, ColumnDouble column, char op)
+        private static int[] GetTrueIndices(double value, Column<double> column, char op)
         {
             switch (op)
             {
@@ -651,24 +652,34 @@ namespace CandleStickPlotter.Strategies
                 default:
                     break;
             }
-            throw new ArithmeticException($"The operator '{op}' is not supported between a ColumnDouble object and a constant.");
+            throw new ArithmeticException($"The operator '{op}' is not supported between a Column<double> object and a constant.");
         }
-        private static ColumnBool CalculateBooleanColumn(ColumnBool column1, ColumnBool column2, char op)
+        private static int[] GetTrueIndices(int[] indices1, int[] indices2, char op, int originalColumnLength)
         {
             switch (op)
             {
                 case '&':
-                    return column1 & column2;
+                    return indices1.Intersect(indices2).ToArray();
                 case '|':
-                    return column1 | column2;
+                    return indices1.Union(indices2).ToArray();
+                // This solution will give the wrong result if the indices passed in come from Column<T>.GetTrueIndices() applied on
+                // a Column<double> with NaNs in it. However, this function will never receive such an input in this implementation.
                 case '!':
-                    return column1 != column2;
+                    {
+                        Column<byte> column1 = Column.FromTrueIndices(indices1, originalColumnLength);
+                        Column<byte> column2 = Column.FromTrueIndices(indices2, originalColumnLength);
+                        return column1 != column2;
+                    }
                 case '=':
-                    return column1 == column2;
+                    {
+                        Column<byte> column1 = Column.FromTrueIndices(indices1, originalColumnLength);
+                        Column<byte> column2 = Column.FromTrueIndices(indices2, originalColumnLength);
+                        return column1 == column2;
+                    }
                 default:
                     break;
             }
-            throw new ArithmeticException($"The operator '{op}' is not supported between two ColumnBool objects.");
+            throw new ArithmeticException($"The operator '{op}' is not supported between two Column<byte> objects.");
         }
         private static double CalculateConstant(double value1, double value2, char op)
         {

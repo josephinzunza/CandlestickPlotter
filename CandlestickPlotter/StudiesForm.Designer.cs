@@ -70,6 +70,7 @@
             okButton.TabIndex = 4;
             okButton.Text = "OK";
             okButton.UseVisualStyleBackColor = true;
+            okButton.Click += OkButton_Click;
             // 
             // cancelButton
             // 
@@ -80,6 +81,7 @@
             cancelButton.TabIndex = 5;
             cancelButton.Text = "Cancel";
             cancelButton.UseVisualStyleBackColor = true;
+            cancelButton.Click += CancelButton_Click;
             // 
             // availableStudiesListBox
             // 
@@ -100,6 +102,7 @@
             addStudy.TabIndex = 7;
             addStudy.Text = "Add Selected";
             addStudy.UseVisualStyleBackColor = true;
+            addStudy.Click += AddSelected_Click;
             // 
             // addedStudiesListBox
             // 
@@ -123,27 +126,33 @@
             // editButton
             // 
             editButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            editButton.Enabled = false;
             editButton.Location = new Point(251, 424);
             editButton.Name = "editButton";
             editButton.Size = new Size(75, 23);
             editButton.TabIndex = 11;
             editButton.Text = "Edit";
             editButton.UseVisualStyleBackColor = true;
+            editButton.Click += EditButton_Click;
             // 
             // removeButton
             // 
             removeButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            removeButton.Enabled = false;
             removeButton.Location = new Point(332, 424);
             removeButton.Name = "removeButton";
             removeButton.Size = new Size(75, 23);
             removeButton.TabIndex = 10;
             removeButton.Text = "Remove";
             removeButton.UseVisualStyleBackColor = true;
+            removeButton.Click += RemoveButton_Click;
             // 
             // StudiesForm
             // 
+            AcceptButton = okButton;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            CancelButton = cancelButton;
             ClientSize = new Size(800, 450);
             Controls.Add(editButton);
             Controls.Add(removeButton);

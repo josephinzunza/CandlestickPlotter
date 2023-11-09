@@ -13,13 +13,13 @@ namespace CandleStickPlotter.Studies.Volatility
         }
         public int Length { get; set; }
         public MovingAverageType MovingAverageType { get; set; }
-        public ColumnDouble Calculate(OhlcData ohlcData)
+        public Column<double> Calculate(Table<double> ohlcData)
         {
             return Calculate(ohlcData, Length, MovingAverageType);
         }
-        public static ColumnDouble Calculate(OhlcData data, int length, MovingAverageType movieAverageType = MovingAverageType.WildersMovingAverage)
+        public static Column<double> Calculate(Table<double> data, int length, MovingAverageType movieAverageType = MovingAverageType.WildersMovingAverage)
         {
-            ColumnDouble result = TrueRange.Calculate(data);
+            Column<double> result = TrueRange.Calculate(data);
             result = movieAverageType switch
             {
                 MovingAverageType.WildersMovingAverage => WildersMovingAverage.Calculate(result, length),
@@ -42,10 +42,10 @@ namespace CandleStickPlotter.Studies.Volatility
         public int Length { get; set; }
         public double StDevs { get; set; }
 
-        public static TableDouble Calculate(ColumnDouble column, int length, double stDevs = 2.0, MovingAverageType averageType = MovingAverageType.SimpleMovingAverage)
+        public static Table<double> Calculate(Column<double> column, int length, double stDevs = 2.0, MovingAverageType averageType = MovingAverageType.SimpleMovingAverage)
         {
-            ColumnDouble[] columns = new ColumnDouble[3];
-            ColumnDouble movingAverage = averageType switch
+            Column<double>[] columns = new Column<double>[3];
+            Column<double> movingAverage = averageType switch
             {
                 MovingAverageType.SimpleMovingAverage => SimpleMovingAverage.Calculate(column, length),
                 MovingAverageType.ExponentialMovingAverage => ExponentialMovingAverage.Calculate(column, length),
@@ -53,7 +53,7 @@ namespace CandleStickPlotter.Studies.Volatility
                 MovingAverageType.WildersMovingAverage => WildersMovingAverage.Calculate(column, length),
                 _ => SimpleMovingAverage.Calculate(column, length),
             };
-            ColumnDouble shift = StandardDeviation.Calculate(column, length
+            Column<double> shift = StandardDeviation.Calculate(column, length
                 ) * stDevs;
             columns[1] = movingAverage;
             columns[0] = movingAverage - shift;
@@ -61,7 +61,7 @@ namespace CandleStickPlotter.Studies.Volatility
             columns[0].Name = "Lower";
             columns[1].Name = "Middle";
             columns[2].Name = "Upper";
-            return new TableDouble(columns);
+            return new Table<double>(columns);
         }
     }
     public class DonchianChannels
@@ -72,23 +72,23 @@ namespace CandleStickPlotter.Studies.Volatility
         }
 
         public int Length { get; set; }
-        public TableDouble Calculate(OhlcData ohlcData)
+        public Table<double> Calculate(Table<double> ohlcData)
         {
             return Calculate(ohlcData, Length);
         }
 
-        public static TableDouble Calculate(OhlcData ohlcData, int length)
+        public static Table<double> Calculate(Table<double> ohlcData, int length)
         {
 
 
-            ColumnDouble lowerChannel = ohlcData.Low.Min(length);
-            ColumnDouble upperChannel = ohlcData.High.Max(length);
-            ColumnDouble middleChannel = (lowerChannel +  upperChannel) / 2;
+            Column<double> lowerChannel = ohlcData["Low"].Min(length);
+            Column<double> upperChannel = ohlcData["High"].Max(length);
+            Column<double> middleChannel = (lowerChannel +  upperChannel) / 2;
             lowerChannel.Name = "Lower";
             middleChannel.Name = "Middle";
             upperChannel.Name = "Upper";
-            ColumnDouble[] columns = { lowerChannel, middleChannel, upperChannel };
-            return new TableDouble(columns);
+            Column<double>[] columns = { lowerChannel, middleChannel, upperChannel };
+            return new Table<double>(columns);
         }
     }
 
@@ -101,16 +101,16 @@ namespace CandleStickPlotter.Studies.Volatility
         }
         public int Length { get; set; }
         public double ATRs { get; set; }
-        public TableDouble Calculate(OhlcData ohlcData)
+        public Table<double> Calculate(Table<double> ohlcData)
         {
             return Calculate(ohlcData, Length, ATRs);
         }
-        public static TableDouble Calculate(OhlcData ohlcData, int length, double atrs = 1.5, MovingAverageType averageType =
+        public static Table<double> Calculate(Table<double> ohlcData, int length, double atrs = 1.5, MovingAverageType averageType =
             MovingAverageType.SimpleMovingAverage, MovingAverageType trueRangeAverageType = MovingAverageType.SimpleMovingAverage,
             MarketDataType marketDataType = MarketDataType.Close)
         {
-            ColumnDouble data = Utils.Utils.GetMarketData(ohlcData, marketDataType);
-            ColumnDouble average = averageType switch
+            Column<double> data = Utils.Utils.GetMarketData(ohlcData, marketDataType);
+            Column<double> average = averageType switch
             {
                 MovingAverageType.ExponentialMovingAverage => ExponentialMovingAverage.Calculate(data, length),
                 MovingAverageType.SimpleMovingAverage => SimpleMovingAverage.Calculate(data, length),
@@ -118,8 +118,8 @@ namespace CandleStickPlotter.Studies.Volatility
                 MovingAverageType.WeightedMovingAverage => WeightedMovingAverage.Calculate(data, length),
                 _ => SimpleMovingAverage.Calculate(data, length)
             }; ;
-            ColumnDouble shift = atrs * AverageTrueRange.Calculate(ohlcData, length, trueRangeAverageType);
-            TableDouble result = new(new ColumnDouble[3]
+            Column<double> shift = atrs * AverageTrueRange.Calculate(ohlcData, length, trueRangeAverageType);
+            Table<double> result = new(new Column<double>[3]
             {
                 average - shift,
                 average,

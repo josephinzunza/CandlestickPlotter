@@ -6,25 +6,30 @@ using CandleStickPlotter.Utils;
 namespace CandleStickPlotter.Studies.Momentum
 {
 
-    internal class RelativeStrenghtIndex
+    internal class RelativeStrenghtIndex : Study
     {
-        public RelativeStrenghtIndex(int length, MovingAverageType movingAverageType = MovingAverageType.WildersMovingAverage)
+        public RelativeStrenghtIndex(int length, MarketDataType marketDataType = MarketDataType.Close,
+            MovingAverageType movingAverageType = MovingAverageType.WildersMovingAverage)
         {
             Length = length;
+            MarketDataType = marketDataType;
             MovingAverageType = movingAverageType;
+            RSI = new Column<double>();
         }
         public int Length { get; set; }
+        public MarketDataType MarketDataType { get; set; }
         public MovingAverageType MovingAverageType { get; set; }
-        public ColumnDouble Calculate(ColumnDouble column)
+        public Column<double> RSI { get; private set; }
+        public override void Calculate(Column<double> column)
         {
-            return Calculate(column, Length, MovingAverageType);
+            RSI = Calculate(column, Length, MovingAverageType);
         }
-        public static ColumnDouble Calculate(ColumnDouble column, int length, MovingAverageType movingAverageType =
+        public static Column<double> Calculate(Column<double> column, int length, MovingAverageType movingAverageType =
             MovingAverageType.WildersMovingAverage)
         {
-            ColumnDouble diffColumn = column.Diff(1);
-            ColumnDouble netChgAvg;
-            ColumnDouble totChgAvg;
+            Column<double> diffColumn = column.Diff(1);
+            Column<double> netChgAvg;
+            Column<double> totChgAvg;
             if (movingAverageType == MovingAverageType.WildersMovingAverage)
             {
                 netChgAvg = WildersMovingAverage.Calculate(diffColumn, length);
@@ -45,12 +50,16 @@ namespace CandleStickPlotter.Studies.Momentum
                 netChgAvg = WeightedMovingAverage.Calculate(diffColumn, length);
                 totChgAvg = WeightedMovingAverage.Calculate(diffColumn.Abs(), length);
             }
-            ColumnDouble chgRatio = netChgAvg.Div(totChgAvg, ColumnDouble.DivByZeroPolicy.SET_TO_ZERO);
+            Column<double> chgRatio = netChgAvg.Div(totChgAvg, Column<double>.DivByZeroPolicy.SET_TO_ZERO);
             return (chgRatio + 1) * 50;
+        }
+        public override string NameString()
+        {
+            return $"RSI(Length={Length}, MarketDataType={MarketDataType}, MovingAverageType={MovingAverageType})";
         }
     }
 
-    internal class TTMSqueeze
+    internal class TTMSqueeze : Study
     {
         public TTMSqueeze(int length, double ATRs = 1.5, double stDevs = 2.0, MarketDataType marketDataType = MarketDataType.Close)
         {
@@ -58,40 +67,40 @@ namespace CandleStickPlotter.Studies.Momentum
             this.ATRs = ATRs;
             StDevs = stDevs;
             MarketDataType = marketDataType;
+            Histogram = new Column<double>();
+            Signal = new Column<byte>();
         }
         public int Length { get; set; }
         public double ATRs { get; set; }
         public double StDevs { get; set; }
         public MarketDataType MarketDataType { get; set; }
-        public TableDouble Calculate(OhlcData ohlcData)
+        public Column<byte> Signal { get; private set; }
+        public Column<double> Histogram { get; private set; }
+        public override void Calculate(Table<double> ohlcvData)
         {
-            return Calculate(ohlcData, Length, ATRs, StDevs, MarketDataType);
+            (Histogram, Signal) = Calculate(ohlcvData, Length, ATRs, StDevs, MarketDataType);
         }
-        public static TableDouble Calculate(OhlcData ohlcData, int length,
+        public static (Column<double>, Column<byte>) Calculate(Table<double> ohlcvData, int length,
             double nATRs = 1.5, double stDevs = 2.0, MarketDataType marketDataType = MarketDataType.Close)
         {
             //
             // Reminder: Add alert line parameter later on
-            ColumnDouble column = Utils.Utils.GetMarketData(ohlcData, marketDataType);
-            ColumnDouble middleDonchianChannel = DonchianChannels.Calculate(ohlcData, length)[1]; // Middle channel
-            ColumnDouble temp = ExponentialMovingAverage.Calculate(column, length);
+            Column<double> column = Utils.Utils.GetMarketData(ohlcvData, marketDataType);
+            Column<double> middleDonchianChannel = DonchianChannels.Calculate(ohlcvData, length)[1]; // Middle channel
+            Column<double> temp = ExponentialMovingAverage.Calculate(column, length);
             temp = column - (temp + middleDonchianChannel) / 2;
-            ColumnDouble histogram = LeastSquaresLinearRegression.Calculate(temp, length)[3] * 100; // Predicted value of Least Squares Regression
-            TableDouble bollingerBands = BollingerBands.Calculate(column, length, stDevs);
-            TableDouble keltnerChannels = KeltnerChannels.Calculate(ohlcData, length, nATRs);
-            ColumnBool signal = new("Signal", ohlcData.Length);
+            Column<double> histogram = LeastSquaresLinearRegression.Calculate(temp, length)[3] * 100; // Predicted value of Least Squares Regression
+            Table<double> bollingerBands = BollingerBands.Calculate(column, length, stDevs);
+            Table<double> keltnerChannels = KeltnerChannels.Calculate(ohlcvData, length, nATRs);
+            Column<byte> signal = new("Signal", ohlcvData.RowCount);
             for (int i = 0; i < signal.Length; i++)
                 // Lower Bollinger band is > lower Keltner channel AND upper Bollinger band is < upper Keltner channel
-                signal[i] = bollingerBands[0][i] > keltnerChannels[0][i] && bollingerBands[2][i] < keltnerChannels[2][i];
-            TableDouble result = new(new ColumnDouble[]
-            {
-                histogram
-            })
-            {
-                BooleanColumns = new ColumnBool
-                [] { signal }
-            };
-            return result;
+                signal[i] = Convert.ToByte(bollingerBands[0][i] > keltnerChannels[0][i] && bollingerBands[2][i] < keltnerChannels[2][i]);
+            return (histogram, signal);
+        }
+        public override string NameString()
+        {
+            return $"TTM_Squeeze(Length={Length}, ATRs={ATRs}, StDevs={StDevs}, MarketDataType={MarketDataType})";
         }
     }
 
