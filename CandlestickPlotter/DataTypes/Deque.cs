@@ -1,106 +1,162 @@
-﻿using System.Numerics;
+﻿using System.Collections;
+using System.Numerics;
 
 namespace CandleStickPlotter.DataTypes
 {
-    internal class Node<T> where T : struct, INumber<T>
+    public class DequeNode<T>
     {
         public T Value { get; set; }
-        public Node<T>? Previous { get; set; }
-        public Node<T>? Next { get; set; }
-        public Node()
-        {
-            Value = default;
-            Previous = null;
-            Next = null;
-        }
-        public Node(T value)
+        public DequeNode<T>? Previous { get; set; }
+        public DequeNode<T>? Next { get; set; }
+        public DequeNode(T value)
         {
             Value = value;
             Previous = null;
             Next = null;
         }
-        public Node(T value, Node<T>? previous, Node<T>? next)
+        public DequeNode(T value, DequeNode<T>? previous, DequeNode<T>? next)
         {
             Value = value;
             Previous = previous;
             Next = next;
         }
     }
-    internal class Deque<T> where T: struct, INumber<T>
+    public class Deque<T> : IEnumerable<T>
     {
-        private Node<T>? TailPointer { get; set; } = null;
-        private Node<T>? HeadPointer { get; set; } = null;
-        public T Tail 
+        private DequeNode<T>? RearPointer { get; set; } = null;
+        private DequeNode<T>? FrontPointer { get; set; } = null;
+        public T? Rear 
         {
             get
             {
-                if (TailPointer == null)
+                if (RearPointer == null)
                     throw new InvalidOperationException("Deque is empty.");
-                return TailPointer.Value;
+                return RearPointer.Value;
             }
         }
-        public T Head
+        public T? Front
         {
             get
             {
-                if (HeadPointer == null)
+                if (FrontPointer == null)
                     throw new InvalidOperationException("Deque is empty.");
-                return HeadPointer.Value;
+                return FrontPointer.Value;
             }
         }
-        public int Count { get; set; }
+        public int Count { get; private set; }
         public Deque() { }
         public void PushBack(T value)
         {
-            Node<T> newNode = new(value, null, TailPointer);
-            if (TailPointer == null)
-                HeadPointer = newNode;
+            DequeNode<T> newNode = new(value, null, RearPointer);
+            if (RearPointer == null)
+                FrontPointer = newNode;
             else
-                TailPointer.Previous = newNode;
-            TailPointer = newNode;
+                RearPointer.Previous = newNode;
+            RearPointer = newNode;
             Count++;
         }
         public void PushFront(T value)
         {
-            Node<T> newNode = new(value, HeadPointer, null);
-            if (HeadPointer == null)
-                TailPointer = newNode;
+            DequeNode<T> newNode = new(value, FrontPointer, null);
+            if (FrontPointer == null)
+                RearPointer = newNode;
             else
-                HeadPointer.Next = newNode;
-            HeadPointer = newNode;
+                FrontPointer.Next = newNode;
+            FrontPointer = newNode;
             Count++;
         }
-        public T PopBack()
+        public T? PopBack()
         {
-            if (TailPointer == null) throw new InvalidOperationException("Deque is empty.");
-            T returnValue = TailPointer.Value;
-            Node<T> next = TailPointer.Next!;
-            if (TailPointer == HeadPointer)
-                HeadPointer = null;
+            if (RearPointer == null) throw new InvalidOperationException("Deque is empty.");
+            T? returnValue = RearPointer.Value;
+            DequeNode<T> next = RearPointer.Next!;
+            if (RearPointer == FrontPointer)
+                FrontPointer = null;
             else
             {
                 next.Previous = null;
-                TailPointer.Next = null;
+                RearPointer.Next = null;
             }
-            TailPointer = next;
+            RearPointer = next;
             Count--;
             return returnValue;
         }
-        public T PopFront()
+        public T? PopFront()
         {
-            if (HeadPointer == null) throw new InvalidOperationException("Deque is empty.");
-            T returnValue = HeadPointer.Value;
-            Node<T>? previous = HeadPointer.Previous;
-            if (TailPointer == HeadPointer)
-                TailPointer = null;
+            if (FrontPointer == null) throw new InvalidOperationException("Deque is empty.");
+            T? returnValue = FrontPointer.Value;
+            DequeNode<T>? previous = FrontPointer.Previous;
+            if (RearPointer == FrontPointer)
+                RearPointer = null;
             else
             {
                 previous!.Next = null;
-                HeadPointer.Previous = null;
+                FrontPointer.Previous = null;
             }
-            HeadPointer = previous;
+            FrontPointer = previous;
             Count--;
             return returnValue;
+        }
+        public void RemoveAt(int index)
+        {
+            if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
+            DequeNode<T>? p = FrontPointer!.Previous;
+            DequeNode<T>? q = FrontPointer;
+            DequeNode<T>? r = null;
+            for (int i = 0; i != index; i++)
+            {
+                r = q;
+                q = p;
+                p = p!.Previous;
+            }
+            if (p != null)
+                p.Next = r;
+            if (r != null)
+                r.Previous = p;
+            q!.Next = null;
+            q.Previous = null;
+            Count--;
+        }
+        public bool MoveUp(int index)
+        {
+            if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
+            bool isNotFirstIndex = index > 0;
+            if (isNotFirstIndex) // It's not the top index
+            {
+                DequeNode<T> p = FrontPointer!;
+                for (int i = 0; i < index - 1; i++)
+                    p = p.Next!;
+                DequeNode<T> q = p.Next!;
+                (p.Value, q.Value) = (q.Value, p.Value);
+            }
+            return isNotFirstIndex;
+        }
+        public bool MoveDown(int index)
+        {
+            if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
+            bool isNotLastIndex = index < Count - 1;
+            if (isNotLastIndex) // It's not the bottom index
+            {
+                DequeNode<T> p = FrontPointer!;
+                for (int i = 0; i < index; i++)
+                    p = p.Next!;
+                DequeNode<T> q = p.Next!;
+                (p.Value, q.Value) = (q.Value, p.Value);
+            }
+            return isNotLastIndex;
+        }
+        public IEnumerator<T> GetEnumerator()
+        {
+            DequeNode<T>? current = FrontPointer;
+            while (current != null)
+            {
+                yield return current.Value;
+                current = current.Previous;
+            }
+        }
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

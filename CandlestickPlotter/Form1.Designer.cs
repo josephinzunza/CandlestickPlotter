@@ -34,7 +34,9 @@
             graphTab = new TabPage();
             plotTableLayoutPanel = new TableLayoutPanel();
             mainPlotPictureBox = new PictureBox();
-            panel1 = new Panel();
+            priceLevelPanel = new Panel();
+            plotUpperControlsPanel = new Panel();
+            editStudiesButton = new Button();
             studiesTab = new TabPage();
             dataGridView1 = new DataGridView();
             loadFileButton2 = new Button();
@@ -97,12 +99,11 @@
             posEffectComboBox = new ComboBox();
             posEffectLabel = new Label();
             studyRadioButton = new RadioButton();
-            priceLevelPanel = new Panel();
             tabControl1.SuspendLayout();
             graphTab.SuspendLayout();
             plotTableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)mainPlotPictureBox).BeginInit();
-            panel1.SuspendLayout();
+            plotUpperControlsPanel.SuspendLayout();
             studiesTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             strategiesTab.SuspendLayout();
@@ -116,10 +117,10 @@
             // 
             // loadFileButton
             // 
-            loadFileButton.Anchor = AnchorStyles.Right;
-            loadFileButton.Location = new Point(1170, 3);
+            loadFileButton.Dock = DockStyle.Right;
+            loadFileButton.Location = new Point(1175, 0);
             loadFileButton.Name = "loadFileButton";
-            loadFileButton.Size = new Size(75, 34);
+            loadFileButton.Size = new Size(75, 40);
             loadFileButton.TabIndex = 1;
             loadFileButton.Text = "Load File";
             loadFileButton.UseVisualStyleBackColor = true;
@@ -127,9 +128,11 @@
             // 
             // logScaleCheckBox
             // 
-            logScaleCheckBox.Anchor = AnchorStyles.Right;
+            logScaleCheckBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             logScaleCheckBox.AutoSize = true;
-            logScaleCheckBox.Location = new Point(1070, 12);
+            logScaleCheckBox.Checked = true;
+            logScaleCheckBox.CheckState = CheckState.Checked;
+            logScaleCheckBox.Location = new Point(973, 12);
             logScaleCheckBox.Name = "logScaleCheckBox";
             logScaleCheckBox.Size = new Size(94, 19);
             logScaleCheckBox.TabIndex = 2;
@@ -153,7 +156,7 @@
             // graphTab
             // 
             graphTab.Controls.Add(plotTableLayoutPanel);
-            graphTab.Controls.Add(panel1);
+            graphTab.Controls.Add(plotUpperControlsPanel);
             graphTab.Location = new Point(4, 24);
             graphTab.Name = "graphTab";
             graphTab.Padding = new Padding(3);
@@ -165,6 +168,7 @@
             // plotTableLayoutPanel
             // 
             plotTableLayoutPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            plotTableLayoutPanel.BackColor = Color.FromArgb(21, 26, 31);
             plotTableLayoutPanel.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
             plotTableLayoutPanel.ColumnCount = 2;
             plotTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -189,15 +193,35 @@
             mainPlotPictureBox.TabIndex = 0;
             mainPlotPictureBox.TabStop = false;
             // 
-            // panel1
+            // priceLevelPanel
             // 
-            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            panel1.Controls.Add(logScaleCheckBox);
-            panel1.Controls.Add(loadFileButton);
-            panel1.Location = new Point(3, 3);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(1250, 40);
-            panel1.TabIndex = 4;
+            priceLevelPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            priceLevelPanel.Location = new Point(1209, 1);
+            priceLevelPanel.Margin = new Padding(0);
+            priceLevelPanel.Name = "priceLevelPanel";
+            priceLevelPanel.Size = new Size(40, 903);
+            priceLevelPanel.TabIndex = 1;
+            // 
+            // plotUpperControlsPanel
+            // 
+            plotUpperControlsPanel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            plotUpperControlsPanel.Controls.Add(editStudiesButton);
+            plotUpperControlsPanel.Controls.Add(logScaleCheckBox);
+            plotUpperControlsPanel.Controls.Add(loadFileButton);
+            plotUpperControlsPanel.Location = new Point(3, 3);
+            plotUpperControlsPanel.Name = "plotUpperControlsPanel";
+            plotUpperControlsPanel.Size = new Size(1250, 40);
+            plotUpperControlsPanel.TabIndex = 4;
+            // 
+            // editStudiesButton
+            // 
+            editStudiesButton.Location = new Point(1073, 0);
+            editStudiesButton.Name = "editStudiesButton";
+            editStudiesButton.Size = new Size(96, 40);
+            editStudiesButton.TabIndex = 3;
+            editStudiesButton.Text = "Edit Studies";
+            editStudiesButton.UseVisualStyleBackColor = true;
+            editStudiesButton.Click += EditStudiesButton_Click;
             // 
             // studiesTab
             // 
@@ -216,7 +240,6 @@
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Location = new Point(27, 6);
             dataGridView1.Name = "dataGridView1";
-            dataGridView1.RowTemplate.Height = 25;
             dataGridView1.Size = new Size(511, 636);
             dataGridView1.TabIndex = 1;
             // 
@@ -249,7 +272,7 @@
             // computeButton
             // 
             computeButton.Enabled = false;
-            computeButton.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            computeButton.Font = new Font("Segoe UI", 9F);
             computeButton.Location = new Point(540, 619);
             computeButton.Name = "computeButton";
             computeButton.Size = new Size(100, 23);
@@ -260,7 +283,7 @@
             // 
             // addConditionButton
             // 
-            addConditionButton.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            addConditionButton.Font = new Font("Segoe UI", 9F);
             addConditionButton.Location = new Point(359, 590);
             addConditionButton.Name = "addConditionButton";
             addConditionButton.Size = new Size(175, 23);
@@ -271,7 +294,7 @@
             // 
             // startOverButton
             // 
-            startOverButton.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            startOverButton.Font = new Font("Segoe UI", 9F);
             startOverButton.Location = new Point(540, 590);
             startOverButton.Name = "startOverButton";
             startOverButton.Size = new Size(100, 23);
@@ -299,7 +322,6 @@
             resultsDataGridView.Name = "resultsDataGridView";
             resultsDataGridView.ReadOnly = true;
             resultsDataGridView.RowHeadersVisible = false;
-            resultsDataGridView.RowTemplate.Height = 25;
             resultsDataGridView.Size = new Size(771, 195);
             resultsDataGridView.TabIndex = 12;
             // 
@@ -530,7 +552,7 @@
             // 
             // clearButton
             // 
-            clearButton.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            clearButton.Font = new Font("Segoe UI", 9F);
             clearButton.Location = new Point(294, 58);
             clearButton.Name = "clearButton";
             clearButton.Size = new Size(30, 30);
@@ -541,7 +563,7 @@
             // 
             // backspaceButton
             // 
-            backspaceButton.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            backspaceButton.Font = new Font("Segoe UI", 9F);
             backspaceButton.Location = new Point(294, 22);
             backspaceButton.Name = "backspaceButton";
             backspaceButton.Size = new Size(30, 30);
@@ -552,7 +574,7 @@
             // 
             // crossesBelowButton
             // 
-            crossesBelowButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            crossesBelowButton.Font = new Font("Segoe UI", 12F);
             crossesBelowButton.Location = new Point(222, 58);
             crossesBelowButton.Name = "crossesBelowButton";
             crossesBelowButton.Size = new Size(30, 30);
@@ -563,7 +585,7 @@
             // 
             // crossesAboveButton
             // 
-            crossesAboveButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            crossesAboveButton.Font = new Font("Segoe UI", 12F);
             crossesAboveButton.Location = new Point(222, 22);
             crossesAboveButton.Name = "crossesAboveButton";
             crossesAboveButton.Size = new Size(30, 30);
@@ -574,7 +596,7 @@
             // 
             // orButton
             // 
-            orButton.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            orButton.Font = new Font("Segoe UI", 9F);
             orButton.Location = new Point(258, 58);
             orButton.Name = "orButton";
             orButton.Size = new Size(30, 30);
@@ -585,7 +607,7 @@
             // 
             // notEqualButton
             // 
-            notEqualButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            notEqualButton.Font = new Font("Segoe UI", 12F);
             notEqualButton.Location = new Point(186, 58);
             notEqualButton.Name = "notEqualButton";
             notEqualButton.Size = new Size(30, 30);
@@ -596,7 +618,7 @@
             // 
             // andButton
             // 
-            andButton.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            andButton.Font = new Font("Segoe UI", 9F);
             andButton.Location = new Point(258, 22);
             andButton.Name = "andButton";
             andButton.Size = new Size(30, 30);
@@ -607,7 +629,7 @@
             // 
             // greaterThanButton
             // 
-            greaterThanButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            greaterThanButton.Font = new Font("Segoe UI", 12F);
             greaterThanButton.Location = new Point(150, 58);
             greaterThanButton.Name = "greaterThanButton";
             greaterThanButton.Size = new Size(30, 30);
@@ -618,7 +640,7 @@
             // 
             // greaterEqThanButton
             // 
-            greaterEqThanButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            greaterEqThanButton.Font = new Font("Segoe UI", 12F);
             greaterEqThanButton.Location = new Point(114, 58);
             greaterEqThanButton.Name = "greaterEqThanButton";
             greaterEqThanButton.Size = new Size(30, 30);
@@ -629,7 +651,7 @@
             // 
             // equalButton
             // 
-            equalButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            equalButton.Font = new Font("Segoe UI", 12F);
             equalButton.Location = new Point(78, 58);
             equalButton.Name = "equalButton";
             equalButton.Size = new Size(30, 30);
@@ -640,7 +662,7 @@
             // 
             // lessEqThanButton
             // 
-            lessEqThanButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lessEqThanButton.Font = new Font("Segoe UI", 12F);
             lessEqThanButton.Location = new Point(42, 58);
             lessEqThanButton.Name = "lessEqThanButton";
             lessEqThanButton.Size = new Size(30, 30);
@@ -651,7 +673,7 @@
             // 
             // lessThanButton
             // 
-            lessThanButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lessThanButton.Font = new Font("Segoe UI", 12F);
             lessThanButton.Location = new Point(6, 58);
             lessThanButton.Name = "lessThanButton";
             lessThanButton.Size = new Size(30, 30);
@@ -662,7 +684,7 @@
             // 
             // rightParentButton
             // 
-            rightParentButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            rightParentButton.Font = new Font("Segoe UI", 12F);
             rightParentButton.Location = new Point(186, 22);
             rightParentButton.Name = "rightParentButton";
             rightParentButton.Size = new Size(30, 30);
@@ -673,7 +695,7 @@
             // 
             // leftParentButton
             // 
-            leftParentButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            leftParentButton.Font = new Font("Segoe UI", 12F);
             leftParentButton.Location = new Point(150, 22);
             leftParentButton.Name = "leftParentButton";
             leftParentButton.Size = new Size(30, 30);
@@ -684,7 +706,7 @@
             // 
             // multButton
             // 
-            multButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            multButton.Font = new Font("Segoe UI", 12F);
             multButton.Location = new Point(78, 22);
             multButton.Name = "multButton";
             multButton.Size = new Size(30, 30);
@@ -695,7 +717,7 @@
             // 
             // divButton
             // 
-            divButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            divButton.Font = new Font("Segoe UI", 12F);
             divButton.Location = new Point(114, 22);
             divButton.Name = "divButton";
             divButton.Size = new Size(30, 30);
@@ -706,7 +728,7 @@
             // 
             // minusButton
             // 
-            minusButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            minusButton.Font = new Font("Segoe UI", 12F);
             minusButton.Location = new Point(42, 22);
             minusButton.Name = "minusButton";
             minusButton.Size = new Size(30, 30);
@@ -717,7 +739,7 @@
             // 
             // plusButton
             // 
-            plusButton.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            plusButton.Font = new Font("Segoe UI", 12F);
             plusButton.Location = new Point(6, 22);
             plusButton.Name = "plusButton";
             plusButton.Size = new Size(30, 30);
@@ -857,15 +879,6 @@
             studyRadioButton.UseVisualStyleBackColor = true;
             studyRadioButton.CheckedChanged += StrategyControls_CheckedChanged;
             // 
-            // priceLevelPanel
-            // 
-            priceLevelPanel.Dock = DockStyle.Fill;
-            priceLevelPanel.Location = new Point(1209, 1);
-            priceLevelPanel.Margin = new Padding(0);
-            priceLevelPanel.Name = "priceLevelPanel";
-            priceLevelPanel.Size = new Size(40, 903);
-            priceLevelPanel.TabIndex = 1;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -880,8 +893,8 @@
             graphTab.ResumeLayout(false);
             plotTableLayoutPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)mainPlotPictureBox).EndInit();
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
+            plotUpperControlsPanel.ResumeLayout(false);
+            plotUpperControlsPanel.PerformLayout();
             studiesTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             strategiesTab.ResumeLayout(false);
@@ -904,7 +917,7 @@
         private TabControl tabControl1;
         private TabPage graphTab;
         private TabPage studiesTab;
-        private Panel panel1;
+        private Panel plotUpperControlsPanel;
         private TabPage strategiesTab;
         private DataGridView dataGridView1;
         private Button loadFileButton2;
@@ -969,5 +982,6 @@
         private TableLayoutPanel plotTableLayoutPanel;
         private PictureBox mainPlotPictureBox;
         private Panel priceLevelPanel;
+        private Button editStudiesButton;
     }
 }

@@ -1,21 +1,36 @@
 ﻿using CandleStickPlotter.DataTypes;
 using CandleStickPlotter.Studies.MovingAverages;
-using CandleStickPlotter.Utils;
+using CandleStickPlotter.Tools;
+using CandleStickPlotter.Studies.Tools;
 
 namespace CandleStickPlotter.Studies.Volatility
 {
-    public class AverageTrueRange
+    public class AverageTrueRange : Study
     {
-        public AverageTrueRange(int length, MovingAverageType movingAverageType)
+        public AverageTrueRange(int length = 14, MovingAverageType movingAverageType = MovingAverageType.WildersMovingAverage)
         {
             Length = length;
             MovingAverageType = movingAverageType;
+            DefaultPlotLocation = PlotLocation.Lower;
+            Plots =
+            [
+                new Plot()
+                {
+                    Name = "ATR",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot("ATR", true, Color.Cyan)
+                    ]
+                }
+            ];
         }
         public int Length { get; set; }
         public MovingAverageType MovingAverageType { get; set; }
-        public Column<double> Calculate(Table<double> ohlcData)
+        public Column<double> ATR { get; private set; } = new();
+        public override void Calculate(Table<double> ohlcvData)
         {
-            return Calculate(ohlcData, Length, MovingAverageType);
+            ATR = Calculate(ohlcvData, Length, MovingAverageType);
         }
         public static Column<double> Calculate(Table<double> data, int length, MovingAverageType movieAverageType = MovingAverageType.WildersMovingAverage)
         {
@@ -31,17 +46,87 @@ namespace CandleStickPlotter.Studies.Volatility
             result.Name = $"ATR{length}";
             return result;
         }
+        public override string NameString()
+        {
+            return $"ATR(Length={Length}, MovingAverageType={MovingAverageType})";
+        }
+        /*
+        public override Dictionary<string, Type> Parameters => new()
+        {
+            { "Length", typeof(int) },
+            { "MovingAverageType", typeof(MovingAverageType) }
+        };*/
     }
-    public class BollingerBands
+    public class BollingerBands : Study
     {
-        public BollingerBands(int length, double stdDevs)
+        public BollingerBands(int length = 20, double stdDevs = 2.0, MarketDataType marketDataType = MarketDataType.Close,
+            MovingAverageType movingAverageType = MovingAverageType.SimpleMovingAverage, int displace = 0)
         {
             Length = length;
             StDevs = stdDevs;
+            MarketDataType = marketDataType;
+            MovingAverageType = movingAverageType;
+            Displace = displace;
+            DefaultPlotLocation = PlotLocation.Price;
+            Plots =
+            [
+                new Plot()
+                {
+                    Name = "LowerBand",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true, Color.Fuchsia)
+                    ]
+                },
+                new Plot()
+                {
+                    Name = "MiddleBand",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true)
+                    ]
+                },
+                new Plot()
+                {
+                    Name = "UpperBand",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true, Color.Red)
+                    ]
+                }
+            ];
         }
         public int Length { get; set; }
         public double StDevs { get; set; }
-
+        public MovingAverageType MovingAverageType { get; set; }
+        public MarketDataType MarketDataType { get; set; }
+        public Column<double> LowerBand { get; private set; } = new();
+        public Column<double> MiddleBand { get; private set; } = new();
+        public Column<double> UpperBand { get; private set; } = new();
+        public override void Calculate(Table<double> ohlcvData)
+        {
+            Column<double> column = CandleStickPlotter.Tools.Tools.GetMarketData(ohlcvData, MarketDataType);
+            Calculate(column);
+        }
+        public override void Calculate(Column<double> column)
+        {
+            Table<double> result = Calculate(column, Length, StDevs, MovingAverageType);
+            result.Displace(Displace);
+            LowerBand = result[0];
+            MiddleBand = result[1];
+            UpperBand = result[2];
+            Plots[0].Values = LowerBand;
+            Plots[1].Values = MiddleBand;
+            Plots[2].Values = UpperBand;
+        }
+        public override void Calculate(Table<double> ohlcvData, MarketDataType marketDataType = MarketDataType.Close)
+        {
+            MarketDataType = marketDataType;
+            Calculate(ohlcvData);
+        }
         public static Table<double> Calculate(Column<double> column, int length, double stDevs = 2.0, MovingAverageType averageType = MovingAverageType.SimpleMovingAverage)
         {
             Column<double>[] columns = new Column<double>[3];
@@ -63,53 +148,162 @@ namespace CandleStickPlotter.Studies.Volatility
             columns[2].Name = "Upper";
             return new Table<double>(columns);
         }
+        public override string NameString()
+        {
+            return $"BollingerBands(Length={Length}, StDevs={StDevs}, MarketDataType={MarketDataType}, Displace={Displace}, , MovingAverageType={MovingAverageType})";
+        }
+        /*
+        public override Dictionary<string, Type> Parameters => new()
+        {
+            { "Length", typeof(int) },
+            { "StDevs", typeof(double) },
+            { "MarketDataType", typeof(MarketDataType) },
+            { "MovingAverageType", typeof(MovingAverageType) },
+            { "Displace", typeof(int) }
+        };*/
     }
-    public class DonchianChannels
+    public class DonchianChannels : Study
     {
-        public DonchianChannels(int length)
+        public DonchianChannels(int length = 20)
         {
             Length = length;
+            DefaultPlotLocation = PlotLocation.Price;
+            Plots =
+            [
+                new Plot()
+                {
+                    Name = "LowerBand",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true)
+                    ]
+                },
+                new Plot()
+                {
+                    Name = "MiddleBand",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true, Color.Yellow)
+                    ]
+                },
+                new Plot()
+                {
+                    Name = "UpperBand",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true)
+                    ]
+                }
+            ];
         }
-
+        public Column<double> LowerBand { get; set; } = new();
+        public Column<double> MiddleBand { get; set; } = new();
+        public Column<double> UpperBand { get; set; } = new();
         public int Length { get; set; }
-        public Table<double> Calculate(Table<double> ohlcData)
+        public override void Calculate(Table<double> ohlcvData)
         {
-            return Calculate(ohlcData, Length);
+            Table<double> result = Calculate(ohlcvData, Length);
+            LowerBand = result[0];
+            MiddleBand = result[1];
+            UpperBand = result[2];
+            Plots[0].Values = LowerBand;
+            Plots[1].Values = MiddleBand;
+            Plots[2].Values = UpperBand;
         }
-
         public static Table<double> Calculate(Table<double> ohlcData, int length)
         {
-
-
             Column<double> lowerChannel = ohlcData["Low"].Min(length);
             Column<double> upperChannel = ohlcData["High"].Max(length);
-            Column<double> middleChannel = (lowerChannel +  upperChannel) / 2;
+            Column<double> middleChannel = (lowerChannel + upperChannel) / 2;
             lowerChannel.Name = "Lower";
             middleChannel.Name = "Middle";
             upperChannel.Name = "Upper";
-            Column<double>[] columns = { lowerChannel, middleChannel, upperChannel };
+            Column<double>[] columns = [lowerChannel, middleChannel, upperChannel];
             return new Table<double>(columns);
         }
+        public override string NameString()
+        {
+            return $"DonchianChannels(Length={Length})";
+        }
+        /*
+        public override Dictionary<string, Type> Parameters => new()
+        {
+            { "Length", typeof(int) }
+        };
+        */
     }
 
-    public class KeltnerChannels
+    public class KeltnerChannels : Study
     {
-        public KeltnerChannels(int length, double aTRs)
+        public KeltnerChannels(int length = 20, double aTRs = 1.5, MarketDataType marketDataType = MarketDataType.Close,
+            MovingAverageType averageType = MovingAverageType.SimpleMovingAverage,
+            MovingAverageType trueRangeAverageType = MovingAverageType.SimpleMovingAverage, int displace = 0)
         {
             Length = length;
             ATRs = aTRs;
+            MarketDataType = marketDataType;
+            MovingAverageType = averageType;
+            TrueRangeAverageType = trueRangeAverageType;
+            Displace = displace;
+            DefaultPlotLocation = PlotLocation.Price;
+            Plots =
+            [
+                new Plot()
+                {
+                    Name = "LowerBand",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true, Color.IndianRed)
+                    ]
+                },
+                new Plot()
+                {
+                    Name = "Average",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true, Color.LightYellow)
+                    ]
+                },
+                new Plot()
+                {
+                    Name = "UpperBand",
+                    Type = Plot.PlotType.Line,
+                    SubPlots =
+                    [
+                        new SubPlot(true)
+                    ]
+                }
+            ];
         }
         public int Length { get; set; }
         public double ATRs { get; set; }
-        public Table<double> Calculate(Table<double> ohlcData)
+        public MarketDataType MarketDataType { get; set; }
+        public MovingAverageType MovingAverageType { get; set; }
+        public MovingAverageType TrueRangeAverageType { get; set; }
+        public Column<double> LowerBand { get; set; } = new();
+        public Column<double> Average {  get; set; } = new();
+        public Column<double> UpperBand { get; set; } = new();
+        public override void Calculate(Table<double> ohlcvData)
         {
-            return Calculate(ohlcData, Length, ATRs);
+            Table<double> result = Calculate(ohlcvData, Length, ATRs, MarketDataType, MovingAverageType, TrueRangeAverageType);
+            result.Displace(Displace);
+            LowerBand = result[0];
+            Average = result[1];
+            UpperBand = result[2];
+            Plots[0].Values = LowerBand;
+            Plots[1].Values = Average;
+            Plots[2].Values = UpperBand;
         }
-        public static Table<double> Calculate(Table<double> ohlcData, int length, double atrs = 1.5, MovingAverageType averageType =
-            MovingAverageType.SimpleMovingAverage, MovingAverageType trueRangeAverageType = MovingAverageType.SimpleMovingAverage,
-            MarketDataType marketDataType = MarketDataType.Close)
+        public static Table<double> Calculate(Table<double> ohlcvData, int length, double atrs = 1.5, MarketDataType marketDataType = MarketDataType.Close,
+            MovingAverageType averageType = MovingAverageType.SimpleMovingAverage,
+            MovingAverageType trueRangeAverageType = MovingAverageType.SimpleMovingAverage)
         {
-            Column<double> data = Utils.Utils.GetMarketData(ohlcData, marketDataType);
+            Column<double> data = CandleStickPlotter.Tools.Tools.GetMarketData(ohlcvData, marketDataType);
             Column<double> average = averageType switch
             {
                 MovingAverageType.ExponentialMovingAverage => ExponentialMovingAverage.Calculate(data, length),
@@ -118,18 +312,32 @@ namespace CandleStickPlotter.Studies.Volatility
                 MovingAverageType.WeightedMovingAverage => WeightedMovingAverage.Calculate(data, length),
                 _ => SimpleMovingAverage.Calculate(data, length)
             }; ;
-            Column<double> shift = atrs * AverageTrueRange.Calculate(ohlcData, length, trueRangeAverageType);
-            Table<double> result = new(new Column<double>[3]
-            {
+            Column<double> shift = atrs * AverageTrueRange.Calculate(ohlcvData, length, trueRangeAverageType);
+            Table<double> result = new(
+            [
                 average - shift,
                 average,
                 average + shift
-            });
+            ]);
             result[0].Name = "Lower";
             result[1].Name = "Middle";
             result[2].Name = "Upper";
             return result;
         }
+        public override string NameString()
+        {
+            return $"KeltnerChannels(Displace={Displace}, ATRs={ATRs}, Length={Length}, Price={MarketDataType}";
+        }
+        /*
+        public override Dictionary<string, Type> Parameters => new()
+        {
+            { "Length", typeof(int) },
+            { "ATRs", typeof(double) },
+            { "MarketDataType", typeof(MarketDataType) },
+            { "MovingAverageType", typeof(MovingAverageType) },
+            { "TrueRangeAverageType", typeof(MovingAverageType) },
+            { "Displace", typeof(int) }
+        };
+        */
     }
-
 }

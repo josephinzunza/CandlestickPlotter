@@ -1,7 +1,9 @@
 using CandleStickPlotter.DataTypes;
 using CandleStickPlotter.Strategies;
 using CandleStickPlotter.Studies.MovingAverages;
-using CandleStickPlotter.Utils;
+using CandleStickPlotter.Tools;
+using CandleStickPlotter.Studies.Tools;
+using CandleStickPlotter.Studies;
 
 namespace CandleStickPlotter
 {
@@ -9,15 +11,15 @@ namespace CandleStickPlotter
     {
         private DateTime[] _dateTime;
         private Table<double> _ohlcvData;
+        private List<List<Study>> ActiveStudies = [];
         private long[] _volume;
         private readonly Label[] priceLabels;
-        private double min = double.NaN;
-        private double max = double.NaN;
-        private readonly List<string> currentExpression = new();
-        private readonly List<string> expresionText = new();
+        private readonly List<string> currentExpression = [];
+        private readonly List<string> expresionText = [];
         bool isClosingCondition = false;
         ClosingCondition closingCondition;
         OpeningCondition openingCondition;
+        PricePlotter? pricePlotter;
         public Form1()
         {
             InitializeComponent();
@@ -35,146 +37,59 @@ namespace CandleStickPlotter
                 priceLabels[i] = new()
                 {
                     Visible = false,
-                    ForeColor = Color.Gray
+                    ForeColor = Color.Gray,
                 };
-                priceLevelPanel.Controls.Add(priceLabels[i]);
             }
-            _dateTime = Array.Empty<DateTime>();
+            _dateTime = [];
             _ohlcvData = new Table<double>();
-            _volume = Array.Empty<long>();
+            _volume = [];
         }
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            Plot();
+            if (pricePlotter != null)
+            {
+                priceLevelPanel.Update();
+                plotUpperControlsPanel.Update();
+            }
         }
-
-        private void Plot()
+        private void EditStudiesButton_Click(object sender, EventArgs e)
         {
-            if (_ohlcvData == null || double.IsNaN(min) || double.IsNaN(max)) return;
-            Control mainPlotCell = plotTableLayoutPanel.GetControlFromPosition(0, 0)!;
-            double yPixels = plotTableLayoutPanel.GetControlFromPosition(0, 0)!.Size.Height - 5; // 5 Pixels of combined vertical margin
-            double pixelsPerDollar = yPixels / (max - min);
-            Bitmap bitmap = new(mainPlotCell.Width, mainPlotCell.Height);
-            Graphics plot = Graphics.FromImage(bitmap);
-            Pen upTickPen = new(Color.Green, 1);
-            Pen downTickPen = new(Color.Red, 1);
-            SolidBrush downTickBrush = new(Color.Red);
-            // Plot dotted lines and set the labels
-            double divSize = (max - min) * pixelsPerDollar / 10;
-            double linePos = (max - min) * pixelsPerDollar + 1;
-            Pen dottedPen = new(Color.Gray, 1)
+            StudiesForm studiesForm = new(ActiveStudies);
+            if (studiesForm.ShowDialog() == DialogResult.OK)
             {
-                DashPattern = new float[] { 1, 9 }
-            };
-            for (int i = 0; i <= 10; i++)
-            {
-                priceLabels[i].Location = new Point(0, (int)linePos - priceLabels[i].Height / 2);
-                plot.DrawLine(dottedPen, 0, (float)linePos, mainPlotCell.Width, (float)linePos);
-                linePos -= divSize;
-            }
-            priceLabels[10].Location = new Point(0, priceLabels[10].Location.Y + priceLabels[10].Height / 2);
-
-            int xPos = 1;
-            double yPos, height, low, high;
-            int candleWidth = (mainPlotCell.Width - 251) / 250;
-            float xTemp;
-            for (int i = 0; i < _ohlcvData.RowCount; i++)
-            {
-                xTemp = xPos + (candleWidth >> 1);
-                if (_ohlcvData["Open"][i] < _ohlcvData["Close"][i])
-                {
-                    if (logScaleCheckBox.Checked)
-                    {
-                        height = (Math.Log10(_ohlcvData["Close"][i]) - Math.Log10(_ohlcvData["Open"][i])) * pixelsPerDollar;
-                        yPos = (max - Math.Log10(_ohlcvData["Close"][i])) * pixelsPerDollar + 1;
-                        high = (max - Math.Log10(_ohlcvData["High"][i])) * pixelsPerDollar + 1;
-                        low = (max - Math.Log10(_ohlcvData["Low"][i])) * pixelsPerDollar + 1;
-                    }
-                    else
-                    {
-                        height = (_ohlcvData["Close"][i] - _ohlcvData["Open"][i]) * pixelsPerDollar;
-                        yPos = (max - _ohlcvData["Close"][i]) * pixelsPerDollar + 1;
-                        high = (max - _ohlcvData["High"][i]) * pixelsPerDollar + 1;
-                        low = (max - _ohlcvData["Low"][i]) * pixelsPerDollar + 1;
-                    }
-
-                    plot.DrawRectangle(upTickPen, xPos, (float)yPos, candleWidth - 1, (float)height);
-                    plot.DrawLine(upTickPen, xTemp, (float)high, xTemp, (float)yPos);
-                    plot.DrawLine(upTickPen, xTemp, (float)(yPos + height), xTemp, (float)low);
-                }
-                else
-                {
-                    if (logScaleCheckBox.Checked)
-                    {
-                        height = (Math.Log10(_ohlcvData["Open"][i]) - Math.Log10(_ohlcvData["Close"][i])) * pixelsPerDollar;
-                        yPos = (max - Math.Log10(_ohlcvData["Open"][i])) * pixelsPerDollar + 1;
-                        high = (max - Math.Log10(_ohlcvData["High"][i])) * pixelsPerDollar + 1;
-                        low = (max - Math.Log10(_ohlcvData["Low"][i])) * pixelsPerDollar + 1;
-                    }
-                    else
-                    {
-                        height = (_ohlcvData["Open"][i] - _ohlcvData["Close"][i]) * pixelsPerDollar;
-                        yPos = (max - _ohlcvData["Open"][i]) * pixelsPerDollar + 1;
-                        high = (max - _ohlcvData["High"][i]) * pixelsPerDollar + 1;
-                        low = (max - _ohlcvData["Low"][i]) * pixelsPerDollar + 1;
-                    }
-                    plot.FillRectangle(downTickBrush, xPos, (float)yPos, candleWidth, (float)height);
-                    plot.DrawLine(downTickPen, xTemp, (float)high, xTemp, (float)yPos);
-                    plot.DrawLine(downTickPen, xTemp, (float)(yPos + height), xTemp, (float)low);
-                }
-                xPos = xPos + 1 + candleWidth;
-            }
-            mainPlotPictureBox.Image = bitmap;
-        }
-
-        private void GetMinMax()
-        {
-            if (_ohlcvData == null) return;
-            if (logScaleCheckBox.Checked)
-            {
-                max = Math.Log10(_ohlcvData["High"].MaxValue);
-                min = Math.Log10(_ohlcvData["Low"].MinValue);
-            }
-            else
-            {
-                max = _ohlcvData["High"].MaxValue;
-                min = _ohlcvData["Low"].MinValue;
+                ActiveStudies = studiesForm.Studies;
             }
         }
-
-        private void SetLabelPrices()
-        {
-            double priceIncrement = logScaleCheckBox.Checked ? (Math.Pow(10, max) - Math.Pow(10, min)) / 10 : (max - min) / 10;
-            double currentPrice = logScaleCheckBox.Checked ? Math.Pow(10, min) : min;
-            for (int i = 0; i <= 10; i++)
-            {
-                priceLabels[i].Text = string.Format("{0:0.00}", currentPrice);
-                currentPrice += priceIncrement;
-            }
-        }
-
         private void LoadFileButton_Click(object sender, EventArgs e)
         {
             using OpenFileDialog ofd = new();
             ofd.Filter = "Comma-separated values files (*.csv)|*.csv";
-
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 string filePath = ofd.FileName;
-                (_dateTime, _ohlcvData, _volume) = Utils.Utils.GetOHLCVTFromCSV(filePath);
+                (_dateTime, _ohlcvData, _volume) = Tools.Tools.GetOHLCVTFromCSV(filePath);
                 foreach (Label label in priceLabels)
+                {
                     label.Visible = true;
-                GetMinMax();
-                SetLabelPrices();
-                Plot();
+                    priceLevelPanel.Controls.Add(label);
+                }
+                pricePlotter = new PricePlotter(_ohlcvData, mainPlotPictureBox, priceLabels);
+                SimpleMovingAverage sma = new(20);
+                sma.Plots[0].Type = Studies.Plot.PlotType.Histogram;
+                sma.Calculate(_ohlcvData);
+                pricePlotter.AddStudy(sma);
+                priceLevelPanel.Refresh();
+                mainPlotPictureBox.Refresh();
             }
         }
 
         private void LogScaleCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            GetMinMax();
-            Plot();
+            if (pricePlotter != null)
+            {
+                pricePlotter.IsLogScale = logScaleCheckBox.Checked;
+            }
         }
 
         private void LoadFileButton2_Click(object sender, EventArgs e)
@@ -185,7 +100,7 @@ namespace CandleStickPlotter
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 string filePath = ofd.FileName;
-                (_dateTime, _ohlcvData, _volume) = Utils.Utils.GetOHLCVTFromCSV(filePath);
+                (_dateTime, _ohlcvData, _volume) = Tools.Tools.GetOHLCVTFromCSV(filePath);
                 Table<double> lsReg = LeastSquaresLinearRegression.Calculate(_ohlcvData["Close"], 14);
                 dataGridView1.Columns.Clear();
                 dataGridView1.Columns.Add("date", "Date");
@@ -350,12 +265,10 @@ namespace CandleStickPlotter
                 expressionLabel.Text += valueTextBox.Text + " ";
             }
         }
-
         private void StudyComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             DisableAdditionalParameters();
         }
-
         private void AddCondition_Click(object sender, EventArgs e)
         {
             expressionLabel.Text = ExpressionToPostfix(currentExpression);
@@ -394,7 +307,7 @@ namespace CandleStickPlotter
 
         private void ComputeButton_Click(object sender, EventArgs e)
         {
-            (_dateTime, _ohlcvData, _volume) = Utils.Utils.GetOHLCVTFromCSV("C:\\Users\\joseh\\PycharmProjects\\algoTrading1\\csv\\AAPL.csv");
+            (_dateTime, _ohlcvData, _volume) = Tools.Tools.GetOHLCVTFromCSV("C:\\Users\\joseh\\PycharmProjects\\algoTrading1\\csv\\AAPL.csv");
             Strategy s = new(openingCondition, closingCondition, _ohlcvData);
             for (int i = 0; i < s.Result.GainLoss.Length; i++)
             {
@@ -479,7 +392,7 @@ namespace CandleStickPlotter
                     specificStudyComboBox.Enabled = true;
                     specificStudyComboBox.DataSource = Enum.GetValues(typeof(BandTypes));
                     break;
-                case StudyType.LinearRegression:
+                case StudyType.LeastSquaresLinearRegression:
                     lengthTextBox.Enabled = true;
                     lengthTextBox.Text = "14";
                     marketDatatypeComboBox.Enabled = true;
@@ -581,8 +494,6 @@ namespace CandleStickPlotter
             }
             return result;
         }
-
-
     }
 }
 

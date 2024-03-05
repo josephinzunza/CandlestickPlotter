@@ -1,102 +1,105 @@
 ﻿using CandleStickPlotter.DataTypes;
+using CandleStickPlotter.Studies.MovingAverages;
 using CandleStickPlotter.Tools;
 
 namespace CandleStickPlotter.Studies.Tools
 {
     public class LeastSquaresLinearRegression : Study
     {
-        public LeastSquaresLinearRegression(int length)
+        public LeastSquaresLinearRegression(int length = 9, MarketDataType marketDataType = MarketDataType.Close, int displace = 0)
         {
             Length = length;
-            Slope = new Column<double>();
-            Intercept = new Column<double>();
-            R2 = new Column<double>();
-            Predicted = new Column<double>();
-            Plots = new Plot[4]
-            {
-            new Plot()
+            MarketDataType = marketDataType;
+            Displace = displace;
+            DefaultPlotLocation = PlotLocation.Price;
+            Plots =
+            [
+            new()
             {
                 Name = "Slope",
                 Type = Plot.PlotType.Line,
-                Values = Slope,
                 Visible = false,
-                SubPlots = new SubPlot[1]
-                {
-                    new SubPlot("Slope", true, Color.Cyan)
-                }
+                SubPlots =
+                [
+                    new("Slope", true, Color.Cyan)
+                ]
             },
-            new Plot()
+            new()
             {
                 Name = "Intercept",
                 Type = Plot.PlotType.Line,
-                Values = Intercept,
                 Visible = false,
-                SubPlots = new SubPlot[1]
-                {
-                    new SubPlot("Intercept", true, Color.Cyan)
-                }
+                SubPlots =
+                [
+                    new("Intercept", true, Color.Cyan)
+                ]
             },
-            new Plot()
+            new()
             {
                 Name = "R2",
                 Type = Plot.PlotType.Line,
-                Values = R2,
                 Visible = false,
-                SubPlots = new SubPlot[1]
-                {
-                    new SubPlot("R2", true, Color.Cyan)
-                }
+                SubPlots =
+                [
+                    new("R2", true, Color.Cyan)
+                ]
             },
-            new Plot()
+            new()
             {
                 Name = "Predicted",
                 Type = Plot.PlotType.Line,
-                Values = Slope,
-                SubPlots = new SubPlot[1]
-                {
-                    new SubPlot("Predicted", true, Color.Cyan)
-                }
+                
+                SubPlots =
+                [
+                    new("Predicted", true, Color.Cyan)
+                ]
             },
-            };
+            ];
         }
         public int Length { get; set; }
-        public Column<double> Slope { get; set; }
-        public Column<double> Intercept { get; set; }
-        public Column<double> R2 { get; set; }
-        public Column<double> Predicted { get; set; }
+        public Column<double> Slope { get; set; } = new();
+        public Column<double> Intercept { get; set; } = new();
+        public Column<double> R2 { get; set; } = new();
+        public Column<double> Predicted { get; set; } = new();
         public MarketDataType MarketDataType { get; set; } = MarketDataType.Close;
+        public override void Calculate(Table<double> ohlcvData)
+        {
+            Column<double> column = CandleStickPlotter.Tools.Tools.GetMarketData(ohlcvData, MarketDataType);
+            Calculate(column);
+        }
         public override void Calculate(Column<double> column)
         {
             Table<double> result = Calculate(column, Length);
-            Slope = result.Columns[0];
-            Intercept = result.Columns[1];
-            R2 = result.Columns[2];
-            Predicted = result.Columns[3];
+            result.Displace(Displace);
+            Slope = result[0];
+            Intercept = result[1];
+            R2 = result[2];
+            Predicted = result[3];
+            Plots[0].Values = Slope;
+            Plots[1].Values = Intercept;
+            Plots[2].Values = R2;
+            Plots[3].Values = Predicted;
         }
         public override void Calculate(Table<double> ohlcvData, MarketDataType marketDataType)
         {
             MarketDataType = marketDataType;
-            Table<double> result = Calculate(CandleStickPlotter.Tools.Tools.GetMarketData(ohlcvData, MarketDataType), Length);
-            Slope = result.Columns[0];
-            Intercept = result.Columns[1];
-            R2 = result.Columns[2];
-            Predicted = result.Columns[3];
+            Calculate(ohlcvData);
         }
         public static Table<double> Calculate(Column<double> column, int length)
         {
             Column<double> y = column;
-            Table<double> result = new(new Column<double>[4]
-            {
-            new Column<double>("Slope", y.Length),
-            new Column<double>("Intercept", y.Length),
-            new Column<double>("R2", y.Length),
-            new Column<double>("Predicted", y.Length)
-            });
+            Table<double> result = new(
+            [
+                new("Slope", y.Length),
+                new("Intercept", y.Length),
+                new("R2", y.Length),
+                new("Predicted", y.Length)
+            ]);
             length--;
             double xSum = length * (length + 1) / 2;
             double xSquaredSum = (length * (length + 1) * (2 * length + 1)) / 6;
             length++;
-            int i = Column.CountLeadingNaNs(y);
+            int i = Column.CountNaNsAtBottom(y);
             Table.SetLeadingNaNs(result, i + length - 1);
             int stop = i + length, j = 0;
             double ySquaredSum = 0;
@@ -135,46 +138,61 @@ namespace CandleStickPlotter.Studies.Tools
         {
             return $"LinearRegression(Displace={Displace}, Length={Length}, Price={MarketDataType})";
         }
+        /*
+        public override Dictionary<string, Type> Parameters => new()
+        {
+            { "Length", typeof(int) },
+            { "MarketDataType", typeof(MarketDataType) },
+            { "Displace", typeof(int) }
+        };
+        */
     }
     public class StandardDeviation : Study
     {
-        public StandardDeviation(int length, uint degreesOfFreedom = 1)
+        public StandardDeviation(int length = 14, MarketDataType marketDataType = MarketDataType.Close, uint degreesOfFreedom = 0)
         {
             Length = length;
+            MarketDataType = marketDataType;
             DegreesOfFreedom = degreesOfFreedom;
-            StDev = new Column<double>();
-            Plots = new Plot[1]
-            {
-            new Plot()
+            DefaultPlotLocation = PlotLocation.Lower;
+            Plots =
+            [
+            new()
             {
                 Name = "StDev",
                 Type = Plot.PlotType.Line,
-                Values = StDev,
-                SubPlots = new SubPlot[1]
-                {
-                    new SubPlot("StDev", Color.Cyan)
-                }
+                
+                SubPlots =
+                [
+                    new("StDev", Color.Cyan)
+                ]
             }
-            };
+            ];
         }
         public int Length { get; set; }
         public uint DegreesOfFreedom { get; set; }
         public MarketDataType MarketDataType { get; set; }
-        public Column<double> StDev { get; set; }
+        public Column<double> StDev { get; set; } = new();
+        public override void Calculate(Table<double> ohlcvData)
+        {
+            Column<double> column = CandleStickPlotter.Tools.Tools.GetMarketData(ohlcvData, MarketDataType);
+            Calculate(column);
+        }
         public override void Calculate(Column<double> column)
         {
             StDev = Calculate(column, Length, DegreesOfFreedom);
+            Plots[0].Values = StDev;
         }
         public override void Calculate(Table<double> ohlcvData, MarketDataType marketDataType)
         {
             MarketDataType = marketDataType;
-            StDev = Calculate(CandleStickPlotter.Tools.Tools.GetMarketData(ohlcvData, MarketDataType), Length, DegreesOfFreedom);
+            Calculate(ohlcvData);
         }
         public static Column<double> Calculate(Column<double> column, int length, uint degreesOfFreedom = 0)
         {
             Column<double> result = new($"StDv{length}", column.Length);
             int start = 0;
-            int stop = Column.CountLeadingNaNs(column);
+            int stop = Column.CountNaNsAtBottom(column);
             int i = start;
             for (; i < stop; i++)
                 result[i] = double.NaN;
@@ -204,29 +222,37 @@ namespace CandleStickPlotter.Studies.Tools
         {
             return $"StandardDeviation(Price={MarketDataType}, Length={Length})";
         }
+        /*
+        public override Dictionary<string, Type> Parameters => new()
+        {
+            { "Length", typeof(int) },
+            { "MarketDataType", typeof(MarketDataType) }
+        };
+        */
     }
     public class TrueRange : Study
     {
         public TrueRange()
         {
-            Plots = new Plot[1]
-            {
-            new Plot()
+            DefaultPlotLocation = PlotLocation.Lower;
+            Plots =
+            [
+            new()
             {
                 Name = "TRI",
                 Type = Plot.PlotType.Line,
-                Values = TRI,
-                SubPlots = new SubPlot[1]
-                {
-                    new SubPlot("TrueRangeIndicator", Color.Cyan)
-                }
+                SubPlots =
+                [
+                    new("TrueRangeIndicator", Color.Cyan)
+                ]
             }
-            };
+            ];
         }
-        public Column<double> TRI { get; set; } = new Column<double>();
+        public Column<double> TRI { get; set; } = new();
         public override void Calculate(Table<double> ohlcvData, MarketDataType marketDataType = MarketDataType.Close)
         {
             TRI = Calculate(ohlcvData);
+            Plots[0].Values = TRI;
         }
         public static double Calculate(double high, double low, double previousClose)
         {
@@ -244,7 +270,7 @@ namespace CandleStickPlotter.Studies.Tools
         }
         public override string NameString()
         {
-            return "TrueRangeIndicator";
+            return "TrueRangeIndicator()";
         }
     }
 }

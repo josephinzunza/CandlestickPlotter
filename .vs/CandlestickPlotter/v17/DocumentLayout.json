@@ -1,0 +1,222 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|c:\\users\\joseh\\source\\repos\\candlestickplotter\\candlestickplotter\\datatypes\\deque.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\datatypes\\deque.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|c:\\users\\joseh\\source\\repos\\candlestickplotter\\candlestickplotter\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\customcontrols\\studygrouppanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\customcontrols\\studygrouppanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\forms\\studiesform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\forms\\studiesform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\studies\\volatility\\volatility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\studies\\volatility\\volatility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\forms\\studiesform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\forms\\studiesform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\studies\\studies.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\studies\\studies.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|c:\\users\\joseh\\source\\repos\\candlestickplotter\\candlestickplotter\\datatypes\\column.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\datatypes\\column.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\studies\\movingaverages\\movingaverages.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\studies\\movingaverages\\movingaverages.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\studies\\momentum\\momentum.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\studies\\momentum\\momentum.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\forms\\editstudyform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\forms\\editstudyform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\candlestickplotter\\studies\\utils\\tools.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88952FD4-10D2-4914-8671-0F1DC98B8AF4}|CandleStickPlotter\\CandleStickPlotter.csproj|solutionrelative:candlestickplotter\\studies\\utils\\tools.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Deque.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\DataTypes\\Deque.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\DataTypes\\Deque.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\DataTypes\\Deque.cs",
+              "RelativeToolTip": "CandlestickPlotter\\DataTypes\\Deque.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAJAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-05T21:55:00.245Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Form1.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Form1.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Form1.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Form1.cs",
+              "RelativeToolTip": "CandlestickPlotter\\Form1.cs",
+              "ViewState": "AQIAACEAAAAAAAAAAAAQwCkAAAANAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-04T01:57:40.013Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Column.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\DataTypes\\Column.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\DataTypes\\Column.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\DataTypes\\Column.cs",
+              "RelativeToolTip": "CandlestickPlotter\\DataTypes\\Column.cs",
+              "ViewState": "AQIAABcAAAAAAAAAAAAwwCMAAAAuAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-03T08:24:11.972Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Studies.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\Studies.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Studies\\Studies.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\Studies.cs",
+              "RelativeToolTip": "CandlestickPlotter\\Studies\\Studies.cs",
+              "ViewState": "AQIAAAgAAAAAAAAAAAAQwAsAAAARAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-27T23:31:00.051Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "MovingAverages.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\MovingAverages\\MovingAverages.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Studies\\MovingAverages\\MovingAverages.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\MovingAverages\\MovingAverages.cs",
+              "RelativeToolTip": "CandlestickPlotter\\Studies\\MovingAverages\\MovingAverages.cs",
+              "ViewState": "AQIAAIAAAAAAAAAAAAAqwIYAAAADAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-27T22:56:18.455Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "StudiesForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Forms\\StudiesForm.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Forms\\StudiesForm.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Forms\\StudiesForm.cs [Design]",
+              "RelativeToolTip": "CandlestickPlotter\\Forms\\StudiesForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-26T05:21:21.533Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Volatility.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\Volatility\\Volatility.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Studies\\Volatility\\Volatility.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\Volatility\\Volatility.cs",
+              "RelativeToolTip": "CandlestickPlotter\\Studies\\Volatility\\Volatility.cs",
+              "ViewState": "AQIAADYBAAAAAAAAAAAqwFQBAAAKAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-28T02:42:51.878Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "StudiesForm.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Forms\\StudiesForm.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Forms\\StudiesForm.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Forms\\StudiesForm.cs",
+              "RelativeToolTip": "CandlestickPlotter\\Forms\\StudiesForm.cs",
+              "ViewState": "AQIAACAAAAAAAAAAAAAuwDUAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-26T05:21:24.298Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "StudyGroupPanel.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\CustomControls\\StudyGroupPanel.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\CustomControls\\StudyGroupPanel.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\CustomControls\\StudyGroupPanel.cs",
+              "RelativeToolTip": "CandlestickPlotter\\CustomControls\\StudyGroupPanel.cs",
+              "ViewState": "AQIAAJwAAAAAAAAAAAAnwLIAAAA4AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-26T08:01:22.966Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Momentum.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\Momentum\\Momentum.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Studies\\Momentum\\Momentum.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\Momentum\\Momentum.cs",
+              "RelativeToolTip": "CandlestickPlotter\\Studies\\Momentum\\Momentum.cs",
+              "ViewState": "AQIAALQAAAAAAAAAAAAqwLcAAAAJAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-28T02:41:57.189Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "EditStudyForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Forms\\EditStudyForm.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Forms\\EditStudyForm.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Forms\\EditStudyForm.cs [Design]",
+              "RelativeToolTip": "CandlestickPlotter\\Forms\\EditStudyForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-02-26T05:03:49.746Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Tools.cs",
+              "DocumentMoniker": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\Utils\\Tools.cs",
+              "RelativeDocumentMoniker": "CandlestickPlotter\\Studies\\Utils\\Tools.cs",
+              "ToolTip": "C:\\Users\\joseh\\source\\repos\\CandlestickPlotter\\CandlestickPlotter\\Studies\\Utils\\Tools.cs",
+              "RelativeToolTip": "CandlestickPlotter\\Studies\\Utils\\Tools.cs",
+              "ViewState": "AQIAAMwAAAAAAAAAAAAqwOYAAAAKAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-01T05:44:34.582Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3,7 +3,8 @@ using CandleStickPlotter.DataTypes;
 using CandleStickPlotter.Studies.Momentum;
 using CandleStickPlotter.Studies.MovingAverages;
 using CandleStickPlotter.Studies.Volatility;
-using CandleStickPlotter.Utils;
+using CandleStickPlotter.Tools;
+using CandleStickPlotter.Studies.Tools;
 
 namespace CandleStickPlotter.Strategies
 {
@@ -14,7 +15,7 @@ namespace CandleStickPlotter.Strategies
         DonchianChannel,
         ExponentialMovingAverage,
         KeltnerChannels,
-        LinearRegression,
+        LeastSquaresLinearRegression,
         RelativeStrengthIndex,
         SimpleMovingAverage,
         StandardDeviation,
@@ -27,44 +28,25 @@ namespace CandleStickPlotter.Strategies
     public enum LinearRegressionValueTypes : byte { Intercept, Predicted, R2, Slope }
     public enum PositionType : byte { Long, Short }
     public enum TTMSqueezeValueTypes : byte { Histogram, Signal}
-    readonly struct OpeningCondition
+    readonly struct OpeningCondition(string postfixExpression, PositionType positionType, double? stopLoss, double? stopGain)
     {
-        public readonly string PostfixExpression { get; }
-        public readonly double? StopLoss { get; }
-        public readonly double? StopGain { get; }
-        public readonly PositionType PositionType { get; }
-        public OpeningCondition(string postfixExpression, PositionType positionType, double? stopLoss, double? stopGain)
-        {
-            PostfixExpression = postfixExpression;
-            PositionType = positionType;
-            StopLoss = stopLoss;
-            StopGain = stopGain;
-        }
+        public readonly string PostfixExpression { get; } = postfixExpression;
+        public readonly double? StopLoss { get; } = stopLoss;
+        public readonly double? StopGain { get; } = stopGain;
+        public readonly PositionType PositionType { get; } = positionType;
     }
-    readonly struct ClosingCondition
+    readonly struct ClosingCondition(string postfixExpression)
     {
-        public readonly string PostfixExpression { get; }
-        public ClosingCondition(string postfixExpression)
-        {
-            PostfixExpression = postfixExpression;
-        }
+        public readonly string PostfixExpression { get; } = postfixExpression;
     }
 
-    public class StrategyResult
+    public class StrategyResult(int id, int[] openingIndices, int[] closingIndices, char[] closingReasons, double[] gainLoss)
     {
-        public StrategyResult(int id, int[] openingIndices, int[] closingIndices, char[] closingReasons, double[] gainLoss)
-        {
-            Id = id;
-            OpeningIndices = openingIndices;
-            ClosingIndices = closingIndices;
-            ClosingReasons = closingReasons;
-            GainLoss = gainLoss;
-        }
-        public int Id { get; private set; }
-        public int[] OpeningIndices { get; set; }
-        public int[] ClosingIndices { get; set; }
-        public char[] ClosingReasons { get; set; }
-        public double[] GainLoss { get; set; }
+        public int Id { get; private set; } = id;
+        public int[] OpeningIndices { get; set; } = openingIndices;
+        public int[] ClosingIndices { get; set; } = closingIndices;
+        public char[] ClosingReasons { get; set; } = closingReasons;
+        public double[] GainLoss { get; set; } = gainLoss;
     }
     class Strategy
     {
@@ -76,7 +58,7 @@ namespace CandleStickPlotter.Strategies
             OpeningCondition = openingCondition;
             ClosingCondition = closingCondition;
             Result = new StrategyResult(id, EvaluateExpression(OpeningCondition.PostfixExpression, ohlcvData),
-            EvaluateExpression(ClosingCondition.PostfixExpression, ohlcvData), Array.Empty<char>(), Array.Empty<double>());
+            EvaluateExpression(ClosingCondition.PostfixExpression, ohlcvData), [], []);
             Evaluate(ohlcvData);
         }
         private void Evaluate(Table<double> ohlcvData)
@@ -85,10 +67,10 @@ namespace CandleStickPlotter.Strategies
             int closingConditionIndex;
             int previousClosingIndex = -1;
             double openingPrice, stopLossPrice, stopGainPrice, closingPrice;
-            List<int> trueOpeningIndices = new();
-            List<int> trueClosingIndices = new();
-            List<char> closingReason = new();
-            List<double> gainLoss = new();
+            List<int> trueOpeningIndices = [];
+            List<int> trueClosingIndices = [];
+            List<char> closingReason = [];
+            List<double> gainLoss = [];
             char reason;
             int k;
             bool stopReached;
@@ -167,10 +149,10 @@ namespace CandleStickPlotter.Strategies
                 }
                 j++;
             }
-            Result.OpeningIndices = trueOpeningIndices.ToArray();
-            Result.ClosingIndices = trueClosingIndices.ToArray();
-            Result.ClosingReasons = closingReason.ToArray();
-            Result.GainLoss = gainLoss.ToArray();
+            Result.OpeningIndices = [.. trueOpeningIndices];
+            Result.ClosingIndices = [.. trueClosingIndices];
+            Result.ClosingReasons = [.. closingReason];
+            Result.GainLoss = [.. gainLoss];
         }
         private static int[] EvaluateExpression(string postfixExpression, Table<double> ohlcvData)
         {
@@ -296,7 +278,7 @@ namespace CandleStickPlotter.Strategies
         private static void GetStudyParameters(string studyString, out string studyName, out string specificStudyName, out List<string> parameters,
             out int displaceAmount, out bool isBoolean)
         {
-            parameters = new();
+            parameters = [];
             int i = 0;
             int state = 0;
             studyName = "";
@@ -369,19 +351,19 @@ namespace CandleStickPlotter.Strategies
                 case StudyType.BollingerBands:
                     { 
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        Table<double> bollingerBands = BollingerBands.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType),
+                        Table<double> bollingerBands = BollingerBands.Calculate(Tools.Tools.GetMarketData(ohlcvData, marketDataType),
                             Convert.ToInt32(parameters[0]), Convert.ToDouble(parameters[2]), Enum.Parse<MovingAverageType>(parameters[3]));
                         switch (Enum.Parse<BandTypes>(specificStudyName))
                         {
                             case BandTypes.Lower:
-                                bollingerBands.Columns[0].Displace(displaceAmount);
-                                return bollingerBands.Columns[0];
+                                bollingerBands[0].Displace(displaceAmount);
+                                return bollingerBands[0];
                             case BandTypes.Middle:
-                                bollingerBands.Columns[1].Displace(displaceAmount);
-                                return bollingerBands.Columns[1];
+                                bollingerBands[1].Displace(displaceAmount);
+                                return bollingerBands[1];
                             case BandTypes.Upper:
-                                bollingerBands.Columns[2].Displace(displaceAmount);
-                                return bollingerBands.Columns[2];
+                                bollingerBands[2].Displace(displaceAmount);
+                                return bollingerBands[2];
                         }
                     }
                     break;
@@ -391,21 +373,21 @@ namespace CandleStickPlotter.Strategies
                         switch (Enum.Parse<BandTypes>(specificStudyName))
                         {
                             case BandTypes.Lower:
-                                donchianChannels.Columns[0].Displace(displaceAmount);
-                                return donchianChannels.Columns[0];
+                                donchianChannels[0].Displace(displaceAmount);
+                                return donchianChannels[0];
                             case BandTypes.Middle:
-                                donchianChannels.Columns[1].Displace(displaceAmount);
-                                return donchianChannels.Columns[1];
+                                donchianChannels[1].Displace(displaceAmount);
+                                return donchianChannels[1];
                             case BandTypes.Upper:
-                                donchianChannels.Columns[2].Displace(displaceAmount);
-                                return donchianChannels.Columns[2];
+                                donchianChannels[2].Displace(displaceAmount);
+                                return donchianChannels[2];
                         }
                     }
                     break;
                 case StudyType.ExponentialMovingAverage:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        Column<double> ema = ExponentialMovingAverage.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType),
+                        Column<double> ema = ExponentialMovingAverage.Calculate(Tools.Tools.GetMarketData(ohlcvData, marketDataType),
                             Convert.ToInt32(parameters[0]));
                         ema.Displace(displaceAmount);
                         return ema;
@@ -413,25 +395,25 @@ namespace CandleStickPlotter.Strategies
                 case StudyType.KeltnerChannels:
                     {
                         Table<double> keltnerChannels = KeltnerChannels.Calculate(ohlcvData, Convert.ToInt32(parameters[0]), Convert.ToDouble(parameters[2]),
-                            Enum.Parse<MovingAverageType>(parameters[3]), Enum.Parse<MovingAverageType>(parameters[4]));
+                            Enum.Parse<MarketDataType>(parameters[1]), Enum.Parse<MovingAverageType>(parameters[3]), Enum.Parse<MovingAverageType>(parameters[4]));
                         switch (Enum.Parse<BandTypes>(specificStudyName))
                         {
                             case BandTypes.Lower:
-                                keltnerChannels.Columns[0].Displace(displaceAmount);
-                                return keltnerChannels.Columns[0];
+                                keltnerChannels[0].Displace(displaceAmount);
+                                return keltnerChannels[0];
                             case BandTypes.Middle:
-                                keltnerChannels.Columns[1].Displace(displaceAmount);
-                                return keltnerChannels.Columns[1];
+                                keltnerChannels[1].Displace(displaceAmount);
+                                return keltnerChannels[1];
                             case BandTypes.Upper:
-                                keltnerChannels.Columns[2].Displace(displaceAmount);
-                                return keltnerChannels.Columns[2];
+                                keltnerChannels[2].Displace(displaceAmount);
+                                return keltnerChannels[2];
                         }
                     }
                     break;
-                case StudyType.LinearRegression:
+                case StudyType.LeastSquaresLinearRegression:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        Table<double> linearRegression = LeastSquaresLinearRegression.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
+                        Table<double> linearRegression = LeastSquaresLinearRegression.Calculate(Tools.Tools.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         switch (Enum.Parse<LinearRegressionValueTypes>(specificStudyName))
                         {
                             case LinearRegressionValueTypes.Slope:
@@ -452,7 +434,7 @@ namespace CandleStickPlotter.Strategies
                 case StudyType.RelativeStrengthIndex:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        Column<double> rsi = RelativeStrenghtIndex.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType),
+                        Column<double> rsi = RelativeStrenghtIndex.Calculate(Tools.Tools.GetMarketData(ohlcvData, marketDataType),
                             Convert.ToInt32(parameters[0]), Enum.Parse<MovingAverageType>(parameters[2]));
                         rsi.Displace(displaceAmount);
                         return rsi;
@@ -460,14 +442,14 @@ namespace CandleStickPlotter.Strategies
                 case StudyType.SimpleMovingAverage:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        Column<double> sma = SimpleMovingAverage.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
+                        Column<double> sma = SimpleMovingAverage.Calculate(Tools.Tools.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         sma.Displace(displaceAmount);
                         return sma;
                     }
                 case StudyType.StandardDeviation:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        Column<double> stDev = StandardDeviation.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
+                        Column<double> stDev = StandardDeviation.Calculate(Tools.Tools.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         stDev.Displace(displaceAmount);
                         return stDev;
                     }
@@ -493,14 +475,14 @@ namespace CandleStickPlotter.Strategies
                 case StudyType.WeigthedMovingAverage:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        Column<double> wma = WeightedMovingAverage.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
+                        Column<double> wma = WeightedMovingAverage.Calculate(Tools.Tools.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         wma.Displace(displaceAmount);
                         return wma;
                     }
                 case StudyType.WildersMovingAverage:
                     {
                         MarketDataType marketDataType = Enum.Parse<MarketDataType>(parameters[1]);
-                        Column<double> wma = WeightedMovingAverage.Calculate(Utils.Utils.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
+                        Column<double> wma = WeightedMovingAverage.Calculate(Tools.Tools.GetMarketData(ohlcvData, marketDataType), Convert.ToInt32(parameters[0]));
                         wma.Displace(displaceAmount);
                         return wma;
                     }
@@ -526,7 +508,7 @@ namespace CandleStickPlotter.Strategies
                     }
                     break;
             }
-            return Array.Empty<int>();
+            return [];
         }
         private static Column<double> CalculateColumn(Column<double> column1, Column<double> column2, char op)
         {

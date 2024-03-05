@@ -36,7 +36,7 @@ namespace CandleStickPlotter.Tools
                 StudyType.DonchianChannel => typeof(DonchianChannels),
                 StudyType.ExponentialMovingAverage => typeof(ExponentialMovingAverage),
                 StudyType.KeltnerChannels => typeof(KeltnerChannels),
-                StudyType.LinearRegression => typeof(LeastSquaresLinearRegression),
+                StudyType.LeastSquaresLinearRegression => typeof(LeastSquaresLinearRegression),
                 StudyType.RelativeStrengthIndex => typeof(RelativeStrenghtIndex),
                 StudyType.SimpleMovingAverage => typeof(SimpleMovingAverage),
                 StudyType.StandardDeviation => typeof(StandardDeviation),
